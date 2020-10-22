@@ -570,7 +570,7 @@ def tf_prediction(outdir,region):
 
 def main():
     # Input handling
-    indir = "./input/merged_2020-10-21_vbfhinv_03Sep20v7_qcd_estimation"
+    indir = "./input/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation"
     acc = klepto_load(indir)
     acc.load('sumw')
     acc.load('sumw_pileup')
