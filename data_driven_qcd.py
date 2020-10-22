@@ -211,7 +211,7 @@ def tf_variations(outdir, region):
     '''
     Nice plots of fit variations.
     '''
-    x = np.linspace(250,1400,100)
+    x = np.linspace(200,5000,100)
     for year in [2017,2018]:
         fits = {}
         for file in  os.listdir(outdir):
@@ -255,7 +255,7 @@ def tf_variations(outdir, region):
         rax.set_xlabel(r"$M_{jj} \ (GeV)$")
         ax.legend()
         ax.set_yscale("log")
-        ax.set_ylim(1e-4,1e-1)
+        ax.set_ylim(1e-4,1e1)
         ax.set_title(f"{year}")
         rax.legend()
         fig.savefig(pjoin(outdir,f"tf_variations_{region}_{year}.pdf"),bbox_inches='tight')
@@ -591,7 +591,8 @@ def main():
     bins = { 
         'sr_vbf_qcd' : {
              'nom' :  [200,400,600,900,1200,1500,2000,2750,3500],
-            #  'alt1' :  [250,300,350,400,500,600,750,1000],
+             'alt1' :  [200,600,1000,1400,2000,2750,3500],
+             'alt2' :  [200,800,1400,2000,2750,3500],
         }
     }
 
