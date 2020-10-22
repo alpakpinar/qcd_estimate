@@ -57,11 +57,11 @@ def make_templates(acc, outdir, tag, bins, region, dphi_cr=slice(0.0,0.5), dphi_
     '''
     Creates the input templates for the fits.
 
-    We start with a 2D distribution of recoil vs delta phi, which is just a coffea histogram.
+    We start with a 2D distribution of mjj vs delta phi, which is just a coffea histogram.
     Then, we integrate dphi slices and different dataset combinations to get QCD MC, non-QCD MC and data
     in all the relevant regions.
     '''
-    distribution = "recoil_vs_dphi_qcd"
+    distribution = "mjj_vs_dphi_qcd"
 
     if not os.path.exists(outdir):
         os.makedirs(outdir)
@@ -72,10 +72,11 @@ def make_templates(acc, outdir, tag, bins, region, dphi_cr=slice(0.0,0.5), dphi_
     for year in [2017,2018]:
         # REBINNED
         h = acc[distribution].integrate("region", region)
-        h=h.rebin("recoil", hist.Bin('recoil','Recoil (GeV)', bins))
+        # TODO: Update the rebinning for mjj!
+        h=h.rebin("mjj", hist.Bin('mjj',r'$M_{jj}$ (GeV)', bins))
         histos = {}
         histos["qcd"]    = h[re.compile(f"QCD.*HT.*{year}")].integrate("dataset")
-        histos["nonqcd"] = h[re.compile(f'(ZJetsToNuNu.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}')].integrate("dataset")
+        histos["nonqcd"] = h[re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|DYJetsToLL_M-50_HT_MLM.*|WJetsToLNu.*HT.*).*{year}')].integrate("dataset")
         histos["data"]   = h[re.compile(f"MET_{year}")].integrate("dataset")
 
         sr_sumw = {}
@@ -95,7 +96,7 @@ def make_templates(acc, outdir, tag, bins, region, dphi_cr=slice(0.0,0.5), dphi_
             f[f"{region}_{year}_cr_{name}"] = export1d(histos[name].integrate("dphi",dphi_cr))
             f[f"{region}_{year}_sr_{name}"] = export1d(histos[name].integrate("dphi",dphi_sr))
         f[f"{region}_{year}_tf"] = URTH1(
-                    edges=histos["qcd"].axis("recoil").edges(),
+                    edges=histos["qcd"].axis("mjj").edges(),
                     sumw=np.r_[0,tf,0],
                     sumw2=np.r_[0,dtf**2,0]
                     )
@@ -574,7 +575,7 @@ def main():
     acc.load('sumw')
     acc.load('sumw_pileup')
     acc.load('nevents')
-    distributions = ["recoil_vs_dphi_qcd"]
+    distributions = ["mjj_vs_dphi_qcd"]
 
     # Merging, scale, etc
     for distribution in distributions:
@@ -586,28 +587,18 @@ def main():
 
     # Alternative binnings
     # split by the name of the signal region to be estimated
+    # TODO: Try out alternative binnings for mjj
     bins = { 
-        'cr_qcd_j': {
-
-            'nom' :  [ 180,200,220,250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400],
-            'alt1' :  [ 250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900,  960, 1020, 1090, 1160, 1250, 1400],
-            'alt2' :  [ 180,200,220,250,  280,  310,  340,  370,  400,  430,  470,  510, 550,  590,  640,  690,  740,  790,  840,  900, 1400],
-            'alt3' :  [ 180, 250,   340, 430, 550, 690,  900, 1160, 1400],
-        },
-        'cr_qcd_tight_v' : {
-             'nom' :  [180,210,250,300,350,400,500,600,750,1000],
-             'alt1' :  [250,300,350,400,500,600,750,1000],
-        },
-        'cr_qcd_loose_v' : {
-             'nom' :  [180,210,250,300,350,400,500,600,750,1000],
-             'alt1' :  [250,300,350,400,500,600,750,1000],
+        'sr_vbf_qcd' : {
+             'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
+            #  'alt1' :  [250,300,350,400,500,600,750,1000],
         }
     }
 
     outdir = pjoin('./output/',indir.split('/')[-1])
     
     # Estimate for each region is completely independent
-    for region in ['cr_qcd_loose_v']:
+    for region in ['sr_vbf_qcd']:
         # Independent estimates also for for different bins
         for bintag, binvals in bins[region].items():
             tag =  f"nominal_bin_{bintag}"
