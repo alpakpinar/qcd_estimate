@@ -442,7 +442,7 @@ def tf_prediction(outdir,region):
 
         mask = bins[:,0] >= 250
         # Save nominal to file
-        channel = 'monojet' if '_j' in region else 'monov'
+        channel = 'vbf'
         fout[f'qcd_{channel}_{year}'] = URTH1(
             edges=np.unique(bins[mask][:-1]),
             sumw=np.r_[0,nominal[mask]],
