@@ -113,18 +113,17 @@ def fit_tf(outdir, tag, region):
         print("Fit",tag, year)
         h = f[f'{region}_{year}_tf']
 
-        tf = h.allvalues[1:]
-        dtf = np.sqrt(h.allvariances[1:])
+        tf = h.values
+        dtf = np.sqrt(h.variances)
 
         for i in range(len(dtf)):
             if dtf[i] == 0:
                 dtf[i] = dtf[i-1]
                 print(i, dtf[i])
-        bins = h.allbins[1:]
+        bins = h.allbins[1:-1]
         bins[-1,1] = bins[-1,0] + bins[-2,1] - bins[-2,0]
         dx = 0.5*np.diff(bins   , axis=1)[:,0]
         x  = 0.5*np.sum(bins, axis=1)
-
         
         guess = [0.5,1e-2,0]
         fits[year] = TFFit(
@@ -262,8 +261,8 @@ def tf_variations(outdir, region):
         plt.close(fig)
 
 def histdiff(h1, h2):
-    sumw = h1.allvalues - h2.allvalues
-    sumw2 = h1.allvariances + h2.allvariances
+    sumw = h1.values - h2.values
+    sumw2 = h1.variances + h2.variances
     return sumw, sumw2
     
 
@@ -298,10 +297,10 @@ def tf_closure(outdir, region):
 
             # sr_qcd_sumw  = sr_qcd_sumw - offset
             # print(year, cut, offset, sr_qcd_sumw)
-            sr_qcd_mc_sumw = f[f"{region}_{year}_sr_qcd"].allvalues
-            sr_qcd_mc_sumw2 = f[f"{region}_{year}_sr_qcd"].allvariances
+            sr_qcd_mc_sumw = f[f"{region}_{year}_sr_qcd"].values
+            sr_qcd_mc_sumw2 = f[f"{region}_{year}_sr_qcd"].variances
 
-            bins = f[f"{region}_{year}_cr_data"].allbins[1:]
+            bins = f[f"{region}_{year}_cr_data"].edges
             bins[-1,1] = bins[-1,0] + bins[-2,1] - bins[-2,0]
             dx = 0.5*np.diff(bins   , axis=1)
             x  = 0.5*np.sum(bins, axis=1)
@@ -425,35 +424,33 @@ def tf_prediction(outdir,region):
         
         cr_qcd_sumw, cr_qcd_sumw2 = histdiff(f[f"{region}_{year}_cr_data"], f[f"{region}_{year}_cr_nonqcd"])
 
-        sr_qcd_mc_sumw = f[f"{region}_{year}_sr_qcd"].allvalues
-        sr_qcd_mc_sumw2 = f[f"{region}_{year}_sr_qcd"].allvariances
-        cr_qcd_mc_sumw = f[f"{region}_{year}_cr_qcd"].allvalues
-        cr_qcd_mc_sumw2 = f[f"{region}_{year}_cr_qcd"].allvariances
+        sr_qcd_mc_sumw = f[f"{region}_{year}_sr_qcd"].values
+        sr_qcd_mc_sumw2 = f[f"{region}_{year}_sr_qcd"].variances
+        cr_qcd_mc_sumw = f[f"{region}_{year}_cr_qcd"].values
+        cr_qcd_mc_sumw2 = f[f"{region}_{year}_cr_qcd"].variances
 
-        bins = f[f"{region}_{year}_cr_data"].allbins[1:]
+        bins = f[f"{region}_{year}_cr_data"].allbins[1:-1]
         bins[-1,1] = bins[-1,0] + bins[-2,1] - bins[-2,0]
         dx = 0.5*np.diff(bins   , axis=1)
         x  = 0.5*np.sum(bins, axis=1)
 
-
         fig, ax, rax = fig_ratio()
-        nominal = fits['nom'].evaluate(x,"best") * cr_qcd_sumw[1:]
-        nominal_sumw2 = fits['nom'].evaluate(x,"best") * cr_qcd_sumw2[1:]
+        nominal = fits['nom'].evaluate(x,"best") * cr_qcd_sumw
+        nominal_sumw2 = fits['nom'].evaluate(x,"best") * cr_qcd_sumw2
 
-        mask = bins[:,0] >= 250
         # Save nominal to file
         channel = 'vbf'
         fout[f'qcd_{channel}_{year}'] = URTH1(
-            edges=np.unique(bins[mask][:-1]),
-            sumw=np.r_[0,nominal[mask]],
-            sumw2=np.r_[0,nominal_sumw2[mask]],
+            edges=np.unique(bins[:-1]),
+            sumw=np.r_[0,nominal],
+            sumw2=np.r_[0,nominal_sumw2],
         )
 
         # Plot QCD MC
         ax.errorbar(
             x,
-            y=sr_qcd_mc_sumw[1:],
-            yerr=np.sqrt(sr_qcd_mc_sumw2[1:]),
+            y=sr_qcd_mc_sumw,
+            yerr=np.sqrt(sr_qcd_mc_sumw2),
             fmt='o',
             color='k',
             label='QCD MC in target'
@@ -463,7 +460,7 @@ def tf_prediction(outdir,region):
         for fittag, fit in fits.items():
             if fittag!='alt3':
                 continue
-            varied = fit.evaluate(x,"best") * cr_qcd_sumw[1:]
+            varied = fit.evaluate(x,"best") * cr_qcd_sumw
             ax.fill_between(
                     x,
                     varied,
@@ -475,14 +472,14 @@ def tf_prediction(outdir,region):
                     )
             # Write binning variations to file
             fout[f'qcd_{channel}_{year}_qcdbinning_{channel}_{year}Up'] = URTH1(
-                edges=np.unique(bins[mask][:-1]),
-                sumw=np.r_[0,varied[mask]],
-                sumw2=np.r_[0,np.zeros(len(varied[mask]))],
+                edges=np.unique(bins[:-1]),
+                sumw=np.r_[0,varied],
+                sumw2=np.r_[0,np.zeros(len(varied))],
             )
             fout[f'qcd_{channel}_{year}_qcdbinning_{channel}_{year}Down'] = URTH1(
-                edges=np.unique(bins[mask][:-1]),
-                sumw=np.r_[0,(2*nominal-varied)[mask]],
-                sumw2=np.r_[0,np.zeros(len(varied[mask]))],
+                edges=np.unique(bins[:-1]),
+                sumw=np.r_[0,(2*nominal-varied)],
+                sumw2=np.r_[0,np.zeros(len(varied))],
             )
 
         ax.fill_between(
@@ -495,18 +492,18 @@ def tf_prediction(outdir,region):
                     label='Closure uncertainty'
                     )
 
-        env_dn, env_up = fits['nom'].envelope(x)  * cr_qcd_sumw[1:]
+        env_dn, env_up = fits['nom'].envelope(x)  * cr_qcd_sumw
 
         # Write fit variation envelopes to file
         fout[f'qcd_{channel}_{year}_qcdfit_{channel}_{year}Up'] = URTH1(
-                edges=np.unique(bins[mask][:-1]),
-                sumw=np.r_[0,env_up[mask]],
-                sumw2=np.r_[0,np.zeros(len(env_up[mask]))],
+                edges=np.unique(bins[:-1]),
+                sumw=np.r_[0,env_up],
+                sumw2=np.r_[0,np.zeros(len(env_up))],
             )
         fout[f'qcd_{channel}_{year}_qcdfit_{channel}_{year}Down'] = URTH1(
-                edges=np.unique(bins[mask][:-1]),
-                sumw=np.r_[0,env_dn[mask]],
-                sumw2=np.r_[0,np.zeros(len(env_up[mask]))],
+                edges=np.unique(bins[:-1]),
+                sumw=np.r_[0,env_dn],
+                sumw2=np.r_[0,np.zeros(len(env_up))],
             )
         ax.plot(
             x,
@@ -525,8 +522,8 @@ def tf_prediction(outdir,region):
         )
         rax.errorbar(
             x,
-            sr_qcd_mc_sumw[1:] / nominal,
-            yerr = np.sqrt(sr_qcd_mc_sumw2[1:]) / nominal,
+            sr_qcd_mc_sumw / nominal,
+            yerr = np.sqrt(sr_qcd_mc_sumw2) / nominal,
             fmt='o',
             color='k'
         )
@@ -543,8 +540,8 @@ def tf_prediction(outdir,region):
                 continue
             rax.fill_between(
                     x,
-                    fit.evaluate(x,"best") * cr_qcd_sumw[1:] / nominal,
-                    2-fit.evaluate(x,"best") * cr_qcd_sumw[1:] / nominal,
+                    fit.evaluate(x,"best") * cr_qcd_sumw / nominal,
+                    2-fit.evaluate(x,"best") * cr_qcd_sumw / nominal,
                     label=fittag,
                     color='dodgerblue',
                     alpha=0.25)
@@ -587,12 +584,11 @@ def main():
 
     # Alternative binnings
     # split by the name of the signal region to be estimated
-    # TODO: Try out alternative binnings for mjj
     bins = { 
         'sr_vbf_qcd' : {
-             'nom' :  [200,400,600,900,1200,1500,2000,2750,3500],
-             'alt1' :  [200,400,600,900,1200,2000,3500],
-             'alt2' :  [200,400,600,900,1500,2750],
+             'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
+             'alt1' :  [200,400,600,900,1200,2000,3500,5000],
+             'alt2' :  [200,400,600,900,1500,2750,5000],
         }
     }
 
