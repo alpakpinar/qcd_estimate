@@ -10,7 +10,7 @@ from matplotlib import pyplot as plt
 
 pjoin = os.path.join
 
-def plot_qcd(inpath, fit='nominal', binning='nom'):
+def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
     '''Plot QCD templates in SR and QCD CR.'''
     fpath = pjoin(inpath, f'templates_sr_vbf_qcd_{fit}_bin_{binning}.root')
 
@@ -26,8 +26,9 @@ def plot_qcd(inpath, fit='nominal', binning='nom'):
         h_cr = infile[f'sr_vbf_qcd_{year}_cr_qcd']
 
         fig, ax = plt.subplots()
-        hep.histplot(h_sr.values, h_sr.edges, yerr=np.sqrt(h_sr.variances), label='SR')
         hep.histplot(h_cr.values, h_cr.edges, yerr=np.sqrt(h_cr.variances), label='CR')
+        if not cr_only:
+            hep.histplot(h_sr.values, h_sr.edges, yerr=np.sqrt(h_sr.variances), label='SR')
 
         ax.set_xlabel(r'$M_{jj} \ (GeV)$')
         ax.set_ylabel('Counts')
@@ -38,7 +39,11 @@ def plot_qcd(inpath, fit='nominal', binning='nom'):
         ax.set_ylim(1e-4, 1e8)
 
         # Save figure
-        outpath = pjoin(outdir, f'qcd_templates_{year}.pdf')
+        if cr_only:
+            outname = f'qcd_template_cr_{year}.pdf'
+        else:
+            outname = f'qcd_templates_{year}.pdf'
+        outpath = pjoin(outdir, outname)
         fig.savefig(outpath)
 
 def main():
@@ -46,6 +51,7 @@ def main():
     inpath = 'output/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation/'
 
     plot_qcd(inpath, fit='nominal', binning='nom')
+    plot_qcd(inpath, fit='nominal', binning='nom', cr_only=True)
 
 if __name__ == '__main__':
     main()
