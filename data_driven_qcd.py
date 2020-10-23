@@ -440,11 +440,7 @@ def tf_prediction(outdir,region):
 
         # Save nominal to file
         channel = 'vbf'
-        fout[f'qcd_{channel}_{year}'] = URTH1(
-            edges=np.unique(bins[:-1]),
-            sumw=np.r_[0,nominal],
-            sumw2=np.r_[0,nominal_sumw2],
-        )
+        fout[f'qcd_{channel}_{year}'] = (nominal, f[f"{region}_{year}_cr_data"].edges)
 
         # Plot QCD MC
         ax.errorbar(
@@ -588,8 +584,9 @@ def main():
         'sr_vbf_qcd' : {
              'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
              'alt1' :  [200,400,600,1200,1500,2000,2750,3500,5000],
-             'alt2' :  [200,400,600,900,1500,2000,5000],
-             'alt3' :  [200,400,600,1200,1500,2000,5000]
+             'alt2' :  [200,400,600,900,1200,1500,2000,5000],
+             'alt3' :  [200,400,600,1200,1500,2000,5000],
+             'alt4' :  [200,400,600,1500,2000,5000],
         }
     }
 
