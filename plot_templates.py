@@ -40,18 +40,24 @@ def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
 
         # Save figure
         if cr_only:
-            outname = f'qcd_template_cr_{year}.pdf'
+            outname = f'qcd_template_cr_bin_{binning}_{year}.pdf'
         else:
-            outname = f'qcd_templates_{year}.pdf'
+            outname = f'qcd_templates_bin_{binning}_{year}.pdf'
         outpath = pjoin(outdir, outname)
         fig.savefig(outpath)
+        print(f'MSG% File saved: {outpath}')
 
 def main():
     # Input path for the template root files
     inpath = 'output/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation/'
 
-    plot_qcd(inpath, fit='nominal', binning='nom')
-    plot_qcd(inpath, fit='nominal', binning='nom', cr_only=True)
-
+    for binning in ['nom', 'alt1', 'alt2', 'alt3', 'alt4']:
+        try:
+            plot_qcd(inpath, fit='nominal', binning=binning)
+            plot_qcd(inpath, fit='nominal', binning=binning, cr_only=True)
+        except KeyError:
+            print(f'Could not find binning: {binning}, skipping')
+            continue
+    
 if __name__ == '__main__':
     main()
