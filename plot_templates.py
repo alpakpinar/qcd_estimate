@@ -10,9 +10,9 @@ from matplotlib import pyplot as plt
 
 pjoin = os.path.join
 
-def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
+def plot_qcd(inpath, fit='nominal', binning='nom', region='sr_vbf_qcd', cr_only=False):
     '''Plot QCD templates in SR and QCD CR.'''
-    fpath = pjoin(inpath, f'templates_sr_vbf_qcd_{fit}_bin_{binning}.root')
+    fpath = pjoin(inpath, f'templates_{region}_{fit}_bin_{binning}.root')
 
     # Output directory to save plots
     outdir = pjoin(inpath, 'templates')
@@ -22,8 +22,8 @@ def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
     infile = uproot.open(fpath)
     for year in [2017, 2018]:
         # Plot QCD in SR and CR 
-        h_sr = infile[f'sr_vbf_qcd_{year}_sr_qcd']
-        h_cr = infile[f'sr_vbf_qcd_{year}_cr_qcd']
+        h_sr = infile[f'{region}_{year}_sr_qcd']
+        h_cr = infile[f'{region}_{year}_cr_qcd']
 
         fig, ax = plt.subplots()
         hep.histplot(h_cr.values, h_cr.edges, yerr=np.sqrt(h_cr.variances), label='CR')
@@ -48,16 +48,17 @@ def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
         print(f'MSG% File saved: {outpath}')
 
 def main():
-    # Input path for the template root files
-    inpath = 'output/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation/'
-
-    for binning in ['nom', 'alt1', 'alt2', 'alt3', 'alt4']:
-        try:
-            plot_qcd(inpath, fit='nominal', binning=binning)
-            plot_qcd(inpath, fit='nominal', binning=binning, cr_only=True)
-        except KeyError:
-            print(f'Could not find binning: {binning}, skipping')
-            continue
+    for binning in ['nom']:
+        for region in ['sr_vbf_qcd_recoil_200', 'sr_vbf_qcd_recoil_230']:
+            # Input path for the template root files
+            inpath = f'output/merged_2020-10-23_vbfhinv_03Sep20v7_qcd_estimation_loose_recoil_regions/{region}'
+        
+            try:
+                plot_qcd(inpath, fit='nominal', binning=binning, region=region)
+                plot_qcd(inpath, fit='nominal', binning=binning, cr_only=True, region=region)
+            except KeyError:
+                print(f'Could not find binning: {binning}, skipping')
+                continue
     
 if __name__ == '__main__':
     main()
