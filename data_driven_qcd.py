@@ -72,7 +72,6 @@ def make_templates(acc, outdir, tag, bins, region, dphi_cr=slice(0.0,0.5), dphi_
     for year in [2017,2018]:
         # REBINNED
         h = acc[distribution].integrate("region", region)
-        # TODO: Update the rebinning for mjj!
         h=h.rebin("mjj", hist.Bin('mjj',r'$M_{jj}$ (GeV)', bins))
         histos = {}
         histos["qcd"]    = h[re.compile(f"QCD.*HT.*{year}")].integrate("dataset")
@@ -563,7 +562,8 @@ def tf_prediction(outdir,region):
 
 def main():
     # Input handling
-    indir = "./input/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation"
+    indir = "./input/merged_2020-10-23_vbfhinv_03Sep20v7_qcd_estimation_loose_recoil_regions"
+    
     acc = klepto_load(indir)
     acc.load('sumw')
     acc.load('sumw_pileup')
@@ -587,13 +587,18 @@ def main():
              'alt2' :  [200,400,600,900,1200,1500,2000,5000],
              'alt3' :  [200,400,600,1200,1500,2000,5000],
              'alt4' :  [200,400,600,1500,2000,5000],
+        },
+        'sr_vbf_qcd_recoil_200' : {
+             'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
+        },
+        'sr_vbf_qcd_recoil_230' : {
+             'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
         }
     }
-
-    outdir = pjoin('./output/',indir.split('/')[-1])
     
     # Estimate for each region is completely independent
-    for region in ['sr_vbf_qcd']:
+    for region in ['sr_vbf_qcd_recoil_200', 'sr_vbf_qcd_recoil_230']:
+        outdir = pjoin('./output/', pjoin(indir.split('/')[-1], region) )
         # Independent estimates also for for different bins
         for bintag, binvals in bins[region].items():
             tag =  f"nominal_bin_{bintag}"
