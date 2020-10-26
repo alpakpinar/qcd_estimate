@@ -14,6 +14,12 @@ from pprint import pprint
 
 pjoin = os.path.join
 
+def calculate_integral(h):
+    '''Calculate the integral of the mjj distribution.'''
+    bin_widths = np.diff(h.edges)
+    bin_vals = h.values
+    return np.sum(bin_vals * bin_widths)
+
 def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
     '''Plot QCD MC templates in SR and QCD CR.'''
     fpath = pjoin(inpath, f'templates_sr_vbf_qcd_{fit}_bin_{binning}.root')
@@ -28,6 +34,12 @@ def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
         # Plot QCD in SR and CR 
         h_sr = infile[f'sr_vbf_qcd_{year}_sr_qcd']
         h_cr = infile[f'sr_vbf_qcd_{year}_cr_qcd']
+
+        print(f'Year: {year}')
+        integral_sr = calculate_integral(h_sr)
+        print(f'Integral of QCD MC over SR: {integral_sr}')
+        integral_cr = calculate_integral(h_sr)
+        print(f'Integral of QCD MC over CR: {integral_cr}')
 
         fig, ax = plt.subplots()
         hep.histplot(h_cr.values, h_cr.edges, yerr=np.sqrt(h_cr.variances), label='CR')
