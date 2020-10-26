@@ -38,7 +38,7 @@ def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
         print(f'Year: {year}')
         integral_sr = calculate_integral(h_sr)
         print(f'Integral of QCD MC over SR: {integral_sr}')
-        integral_cr = calculate_integral(h_sr)
+        integral_cr = calculate_integral(h_cr)
         print(f'Integral of QCD MC over CR: {integral_cr}')
 
         fig, ax = plt.subplots()
@@ -163,7 +163,7 @@ def plot_templates_split_by_ht(inpath, region='sr'):
 
 def main():
     # Input path for the template root files
-    inpath = 'output/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation/'
+    inpath = 'output/merged_2020-10-26_vbfhinv_03Sep20v7_qcd_estimation_qcd_large_ht'
 
     for binning in ['nom', 'alt1', 'alt2', 'alt3', 'alt4']:
         try:
@@ -175,7 +175,7 @@ def main():
             print(f'Could not find binning: {binning}, skipping')
             continue
     
-    inpath_for_klepto = 'input/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation/'
+    inpath_for_klepto = 'input/merged_2020-10-26_vbfhinv_03Sep20v7_qcd_estimation_qcd_large_ht'
     plot_templates_split_by_ht(inpath_for_klepto, region='sr')
     plot_templates_split_by_ht(inpath_for_klepto, region='cr')
 
