@@ -20,9 +20,9 @@ def calculate_integral(h):
     bin_vals = h.values
     return np.sum(bin_vals * bin_widths)
 
-def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
+def plot_qcd(inpath, region='sr_vbf_qcd', fit='nominal', binning='nom', cr_only=False):
     '''Plot QCD MC templates in SR and QCD CR.'''
-    fpath = pjoin(inpath, f'templates_sr_vbf_qcd_{fit}_bin_{binning}.root')
+    fpath = pjoin(inpath, f'templates_{region}_{fit}_bin_{binning}.root')
 
     # Output directory to save plots
     outdir = pjoin(inpath, 'templates')
@@ -32,8 +32,8 @@ def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
     infile = uproot.open(fpath)
     for year in [2017, 2018]:
         # Plot QCD in SR and CR 
-        h_sr = infile[f'sr_vbf_qcd_{year}_sr_qcd']
-        h_cr = infile[f'sr_vbf_qcd_{year}_cr_qcd']
+        h_sr = infile[f'{region}_{year}_sr_qcd']
+        h_cr = infile[f'{region}_{year}_cr_qcd']
 
         print(f'Year: {year}')
         integral_sr = calculate_integral(h_sr)
@@ -48,7 +48,12 @@ def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
 
         ax.set_xlabel(r'$M_{jj} \ (GeV)$')
         ax.set_ylabel('Counts')
-        ax.set_title(f'QCD MC: {year}')
+        if 'detajj' not in region:
+            ax.set_title(f'QCD MC: {year}')
+        elif 'small_detajj' in region:
+            ax.set_title(r'QCD MC: {}, $\Delta\eta_{{jj}} < 5.0$'.format(year))
+        elif 'large_detajj' in region:
+            ax.set_title(r'QCD MC: {}, $\Delta\eta_{{jj}} > 5.0$'.format(year))
         ax.legend()
 
         ax.set_yscale('log')
@@ -56,17 +61,17 @@ def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
 
         # Save figure
         if cr_only:
-            outname = f'qcd_template_cr_bin_{binning}_{year}.pdf'
+            outname = f'qcd_template_cr_bin_{binning}_{region}_{year}.pdf'
         else:
-            outname = f'qcd_templates_bin_{binning}_{year}.pdf'
+            outname = f'qcd_templates_bin_{binning}_{region}_{year}.pdf'
         outpath = pjoin(outdir, outname)
         fig.savefig(outpath)
         plt.close(fig)
         print(f'MSG% File saved: {outpath}')
 
-def plot_data_driven_qcd_in_cr(inpath, fit='nominal', binning='nom'):
+def plot_data_driven_qcd_in_cr(inpath, region='sr_vbf_qcd', fit='nominal', binning='nom'):
     '''In the QCD CR, plot the data driven QCD estimation, e.g. Data - Non-QCD bkg'''
-    fpath = pjoin(inpath, f'templates_sr_vbf_qcd_{fit}_bin_{binning}.root')
+    fpath = pjoin(inpath, f'templates_{region}_{fit}_bin_{binning}.root')
 
     # Output directory to save plots
     outdir = pjoin(inpath, 'templates')
@@ -76,8 +81,8 @@ def plot_data_driven_qcd_in_cr(inpath, fit='nominal', binning='nom'):
     infile = uproot.open(fpath)
     for year in [2017, 2018]:
         # Read the data and non-QCD histograms from file
-        h_cr_data = infile[f'sr_vbf_qcd_{year}_cr_data']
-        h_cr_nonqcd = infile[f'sr_vbf_qcd_{year}_cr_nonqcd']
+        h_cr_data = infile[f'{region}_{year}_cr_data']
+        h_cr_nonqcd = infile[f'{region}_{year}_cr_nonqcd']
 
         # Take the difference of the two to get the data-driven QCD estimate in CR
         qcd_est_sumw, qcd_est_sumw2 = histdiff(h_cr_data, h_cr_nonqcd)
@@ -163,19 +168,20 @@ def plot_templates_split_by_ht(inpath, region='sr'):
 
 def main():
     # Input path for the template root files
-    inpath = 'output/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation/'
+    inpath = 'output/merged_2020-10-26_vbfhinv_03Sep20v7_qcd_estimation_very_loose_recoil_regions_detajj_cat'
 
-    for binning in ['nom', 'alt1', 'alt2', 'alt3', 'alt4']:
-        try:
-            plot_qcd(inpath, fit='nominal', binning=binning)
-            plot_qcd(inpath, fit='nominal', binning=binning, cr_only=True)
-
-            plot_data_driven_qcd_in_cr(inpath, fit='nominal', binning=binning)
-        except KeyError:
-            print(f'Could not find binning: {binning}, skipping')
-            continue
+    for binning in ['nom']:
+        for region in ['sr_vbf_qcd_small_detajj', 'sr_vbf_qcd_large_detajj']:
+            try:
+                plot_qcd(inpath, fit='nominal', binning=binning, region=region)
+                plot_qcd(inpath, fit='nominal', binning=binning, cr_only=True, region=region)
     
-    inpath_for_klepto = 'input/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation/'
+                plot_data_driven_qcd_in_cr(inpath, fit='nominal', binning=binning, region=region)
+            except KeyError:
+                print(f'Could not find binning: {binning}, skipping')
+                continue
+    
+    inpath_for_klepto = 'input/merged_2020-10-26_vbfhinv_03Sep20v7_qcd_estimation_very_loose_recoil_regions_detajj_cat'
     plot_templates_split_by_ht(inpath_for_klepto, region='sr')
     plot_templates_split_by_ht(inpath_for_klepto, region='cr')
 
