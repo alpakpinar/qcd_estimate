@@ -563,7 +563,7 @@ def tf_prediction(outdir,region):
 
 def main():
     # Input handling
-    indir = "./input/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation"
+    indir = "./input/merged_2020-10-26_vbfhinv_03Sep20v7_qcd_estimation_very_loose_recoil_regions_detajj_cat"
     acc = klepto_load(indir)
     acc.load('sumw')
     acc.load('sumw_pileup')
@@ -578,22 +578,20 @@ def main():
         acc[distribution] = merge_datasets(acc[distribution])
         acc[distribution].axis('dataset').sorting = 'integral'
 
-    # Alternative binnings
-    # split by the name of the signal region to be estimated
+    # Binnings for different regions, categorized by detajj
     bins = { 
-        'sr_vbf_qcd' : {
+        'sr_vbf_qcd_small_detajj' : {
              'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
-             'alt1' :  [200,400,600,1200,1500,2000,2750,3500,5000],
-             'alt2' :  [200,400,600,900,1200,1500,2000,5000],
-             'alt3' :  [200,400,600,1200,1500,2000,5000],
-             'alt4' :  [200,400,600,1500,2000,5000],
-        }
+        },
+        'sr_vbf_qcd_large_detajj' : {
+             'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
+        },
     }
 
     outdir = pjoin('./output/',indir.split('/')[-1])
     
     # Estimate for each region is completely independent
-    for region in ['sr_vbf_qcd']:
+    for region in ['sr_vbf_qcd_small_detajj', 'sr_vbf_qcd_large_detajj']:
         # Independent estimates also for for different bins
         for bintag, binvals in bins[region].items():
             tag =  f"nominal_bin_{bintag}"
