@@ -188,7 +188,7 @@ def fit_tf(outdir, tag, region):
                 )
             i+=1
         # Aesthetics
-        rax.set_ylim(0,2)
+        rax.set_ylim(0,4)
         rax.grid(linestyle="--")
         rax.set_ylabel("Histogram / fit")
         ax.set_ylabel("QCD MC transfer factor SR / CR")
@@ -457,15 +457,15 @@ def tf_prediction(outdir,region):
             if fittag!='alt3':
                 continue
             varied = fit.evaluate(x,"best") * cr_qcd_sumw
-            ax.fill_between(
-                    x,
-                    varied,
-                    2*nominal -  varied,
-                    ls='-',
-                    color='dodgerblue',
-                    alpha=0.5,
-                    label='Binning uncertainty'
-                    )
+            # ax.fill_between(
+                    # x,
+                    # varied,
+                    # 2*nominal -  varied,
+                    # ls='-',
+                    # color='dodgerblue',
+                    # alpha=0.5,
+                    # label='Binning uncertainty'
+                    # )
             # Write binning variations to file
             fout[f'qcd_{channel}_{year}_qcdbinning_{channel}_{year}Up'] = URTH1(
                 edges=np.unique(bins[:-1]),
