@@ -195,7 +195,7 @@ def fit_tf(outdir, tag, region):
         rax.set_xlabel(r"$M_{jj} \ (GeV)$")
         ax.legend()
         ax.set_yscale("log")
-        ax.set_ylim(1e-5,1e0)
+        ax.set_ylim(1e-3,1e4)
         ax.set_title(f"{tag}, {year}")
         fig.savefig(pjoin(outdir,f"tf_fit_{region}_{tag}_{year}.pdf"),bbox_inches='tight')
         plt.close(fig)
@@ -562,7 +562,7 @@ def tf_prediction(outdir,region):
 
 def main():
     # Input handling
-    indir = "./input/merged_2020-10-23_vbfhinv_03Sep20v7_qcd_estimation_loose_recoil_regions"
+    indir = "./input/merged_2020-10-26_vbfhinv_03Sep20v7_qcd_estimation_very_loose_recoil_regions_detajj_cat"
     
     acc = klepto_load(indir)
     acc.load('sumw')
@@ -588,16 +588,19 @@ def main():
              'alt3' :  [200,400,600,1200,1500,2000,5000],
              'alt4' :  [200,400,600,1500,2000,5000],
         },
-        'sr_vbf_qcd_recoil_200' : {
+        'sr_vbf_qcd_recoil_100' : {
              'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
         },
-        'sr_vbf_qcd_recoil_230' : {
+        'sr_vbf_qcd_recoil_150' : {
+             'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
+        },
+        'sr_vbf_qcd_recoil_200' : {
              'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
         }
     }
     
     # Estimate for each region is completely independent
-    for region in ['sr_vbf_qcd_recoil_200', 'sr_vbf_qcd_recoil_230']:
+    for region in ['sr_vbf_qcd_recoil_100', 'sr_vbf_qcd_recoil_150', 'sr_vbf_qcd_recoil_200']:
         outdir = pjoin('./output/', pjoin(indir.split('/')[-1], region) )
         # Independent estimates also for for different bins
         for bintag, binvals in bins[region].items():
