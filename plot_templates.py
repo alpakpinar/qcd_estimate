@@ -8,6 +8,9 @@ import mplhep as hep
 import numpy as np
 from matplotlib import pyplot as plt
 from data_driven_qcd import histdiff
+from klepto.archives import dir_archive
+from coffea import hist
+from pprint import pprint
 
 pjoin = os.path.join
 
@@ -89,6 +92,63 @@ def plot_data_driven_qcd_in_cr(inpath, fit='nominal', binning='nom'):
         plt.close(fig)
         print(f'MSG% File saved: {outpath}')
 
+def plot_templates_split_by_ht(inpath, region='sr'):
+    '''Plot QCD templates in SR or CR, split by the individual HT bins.'''
+    acc = dir_archive(inpath)
+    acc.load('sumw')
+    variable = 'mjj_vs_dphi_qcd'
+    acc.load(variable)
+    h = acc[variable]
+
+    from bucoffea.plot.util import merge_extensions, scale_xs_lumi
+    h = merge_extensions(h, acc, reweight_pu=False)
+    scale_xs_lumi(h)
+
+    # Get the relevant dphi values
+    if region == 'sr':
+        dphi_slice = slice(0.5, None)
+    else:
+        dphi_slice = slice(0., 0.5)
+    
+    h = h.integrate('dphi', dphi_slice).integrate('region', 'sr_vbf_qcd')
+    # Rebin mjj
+    mjj_bin = hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200,400,600,900,1200,1500,2000,2750,3500,5000])
+    h = h.rebin('mjj', mjj_bin)
+
+    # Output directory for plots
+    outdir = pjoin( inpath.replace('input', 'output'), 'split_by_ht' )
+    if not os.path.exists(outdir):
+        os.makedirs(outdir)
+
+    for year in [2017, 2018]:
+        # Get QCD MC datasets for the given year
+        _h = h[re.compile(f'QCD_HT.*{year}')]
+
+        # Plot for each HT bin
+        fig, ax = plt.subplots()
+        hist.plot1d(_h, ax=ax, overlay='dataset')
+
+        ax.set_yscale('log')
+        ax.set_ylim(1e-4, 1e8)
+        if region == 'sr':
+            ax.set_title(r'$\Delta\phi(jet,MET) > 0.5$')
+        else:
+            ax.set_title(r'$\Delta\phi(jet,MET) \leq 0.5$')
+
+        # Make the legend labels shorter
+        handles, labels = ax.get_legend_handles_labels()
+        for handle, label in zip(handles, labels):
+            new_label = label.split('_')[1].split('-')[0]
+            handle.set_label(new_label)
+
+        ax.legend(handles=handles, prop={'size' : 10.})
+
+        # Save figure
+        outpath = pjoin(outdir, f'qcd_split_by_ht_{region}_{year}.pdf')
+        fig.savefig(outpath)
+        plt.close(fig)
+        print(f'File saved: {outpath}')
+
 def main():
     # Input path for the template root files
     inpath = 'output/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation/'
@@ -103,5 +163,9 @@ def main():
             print(f'Could not find binning: {binning}, skipping')
             continue
     
+    inpath_for_klepto = 'input/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation/'
+    plot_templates_split_by_ht(inpath_for_klepto, region='sr')
+    plot_templates_split_by_ht(inpath_for_klepto, region='cr')
+
 if __name__ == '__main__':
     main()
