@@ -38,7 +38,7 @@ def plot_qcd(inpath, fit='nominal', binning='nom', cr_only=False):
         print(f'Year: {year}')
         integral_sr = calculate_integral(h_sr)
         print(f'Integral of QCD MC over SR: {integral_sr}')
-        integral_cr = calculate_integral(h_sr)
+        integral_cr = calculate_integral(h_cr)
         print(f'Integral of QCD MC over CR: {integral_cr}')
 
         fig, ax = plt.subplots()

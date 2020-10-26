@@ -534,13 +534,13 @@ def tf_prediction(outdir,region):
         for fittag, fit in fits.items():
             if fittag!='alt3':
                 continue
-            rax.fill_between(
-                    x,
-                    fit.evaluate(x,"best") * cr_qcd_sumw / nominal,
-                    2-fit.evaluate(x,"best") * cr_qcd_sumw / nominal,
-                    label=fittag,
-                    color='dodgerblue',
-                    alpha=0.25)
+            # rax.fill_between(
+                    # x,
+                    # fit.evaluate(x,"best") * cr_qcd_sumw / nominal,
+                    # 2-fit.evaluate(x,"best") * cr_qcd_sumw / nominal,
+                    # label=fittag,
+                    # color='dodgerblue',
+                    # alpha=0.25)
 
         rax.fill_between(
             x,
