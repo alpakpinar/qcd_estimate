@@ -583,24 +583,21 @@ def main():
     bins = { 
         'sr_vbf_qcd' : {
              'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
-             'alt1' :  [200,400,600,1200,1500,2000,2750,3500,5000],
-             'alt2' :  [200,400,600,900,1200,1500,2000,5000],
-             'alt3' :  [200,400,600,1200,1500,2000,5000],
-             'alt4' :  [200,400,600,1500,2000,5000],
-        },
-        'sr_vbf_qcd_recoil_100' : {
-             'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
-        },
-        'sr_vbf_qcd_recoil_150' : {
-             'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
-        },
-        'sr_vbf_qcd_recoil_200' : {
-             'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
+            #  'alt1' :  [200,400,600,1200,1500,2000,2750,3500,5000],
+            #  'alt2' :  [200,400,600,900,1200,1500,2000,5000],
+            #  'alt3' :  [200,400,600,1200,1500,2000,5000],
+            #  'alt4' :  [200,400,600,1500,2000,5000],
         }
     }
+
+    for cut_tag in ['recoil_100', 'recoil_150', 'recoil_200']:
+        for detajj_tag in ['small_detajj', 'large_detajj']:
+            bins[f'sr_vbf_qcd_{cut_tag}_{detajj_tag}'] = {
+                'nom' : [200,400,600,900,1200,1500,2000,2750,3500,5000]
+            } 
     
     # Estimate for each region is completely independent
-    for region in ['sr_vbf_qcd_recoil_100', 'sr_vbf_qcd_recoil_150', 'sr_vbf_qcd_recoil_200']:
+    for region in bins.keys():
         outdir = pjoin('./output/', pjoin(indir.split('/')[-1], region) )
         # Independent estimates also for for different bins
         for bintag, binvals in bins[region].items():
