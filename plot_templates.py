@@ -45,13 +45,23 @@ def plot_qcd(inpath, fit='nominal', binning='nom', region='sr_vbf_qcd', cr_only=
             outname = f'qcd_templates_bin_{binning}_{year}.pdf'
         outpath = pjoin(outdir, outname)
         fig.savefig(outpath)
+        plt.close(fig)
         print(f'MSG% File saved: {outpath}')
 
 def main():
+    regions = [
+        'sr_vbf_qcd_recoil_100_small_detajj',
+        'sr_vbf_qcd_recoil_100_large_detajj',
+        'sr_vbf_qcd_recoil_150_small_detajj',
+        'sr_vbf_qcd_recoil_150_large_detajj',
+        'sr_vbf_qcd_recoil_200_small_detajj',
+        'sr_vbf_qcd_recoil_200_large_detajj'
+    ]
+
     for binning in ['nom']:
-        for region in ['sr_vbf_qcd_recoil_200', 'sr_vbf_qcd_recoil_230']:
+        for region in regions:
             # Input path for the template root files
-            inpath = f'output/merged_2020-10-23_vbfhinv_03Sep20v7_qcd_estimation_loose_recoil_regions/{region}'
+            inpath = f'output/merged_2020-10-27_vbfhinv_03Sep20v7_qcd_estimation_very_loose_recoil_regions_detajj_cat/{region}'
         
             try:
                 plot_qcd(inpath, fit='nominal', binning=binning, region=region)
