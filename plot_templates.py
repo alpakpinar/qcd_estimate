@@ -10,6 +10,21 @@ from matplotlib import pyplot as plt
 
 pjoin = os.path.join
 
+def get_title_for_region(region, year):
+    metcut = re.findall('recoil_\d+', region)[0].split('_')[-1]
+    if 'small_detajj' in region:
+        detajj_cut = r'$\Delta\eta_{{jj}} < 5.0$'
+    elif 'large_detajj' in region:
+        detajj_cut = r'$\Delta\eta_{{jj}} > 5.0$'
+
+    title = 'QCD MC: {__YEAR__}, MET > {__METCUT__} & {__DETAJJCUT__}'.format(
+        __YEAR__=year,
+        __METCUT__=metcut,
+        __DETAJJCUT__=detajj_cut
+    )
+
+    return title
+
 def plot_qcd(inpath, fit='nominal', binning='nom', region='sr_vbf_qcd', cr_only=False):
     '''Plot QCD templates in SR and QCD CR.'''
     fpath = pjoin(inpath, f'templates_{region}_{fit}_bin_{binning}.root')
@@ -32,7 +47,7 @@ def plot_qcd(inpath, fit='nominal', binning='nom', region='sr_vbf_qcd', cr_only=
 
         ax.set_xlabel(r'$M_{jj} \ (GeV)$')
         ax.set_ylabel('Counts')
-        ax.set_title(f'QCD MC: {year}')
+        ax.set_title( get_title_for_region(region, year) )
         ax.legend()
 
         ax.set_yscale('log')
