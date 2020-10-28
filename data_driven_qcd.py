@@ -598,6 +598,7 @@ def main():
     
     # Estimate for each region is completely independent
     for region in bins.keys():
+        skip_region=False
         outdir = pjoin('./output/', pjoin(indir.split('/')[-1], region) )
         # Independent estimates also for for different bins
         for bintag, binvals in bins[region].items():
@@ -608,10 +609,14 @@ def main():
                             tag, 
                             region=region, 
                             bins=binvals)
-            fit_tf(
-                    outdir,
-                    tag, 
-                    region)
+            try:
+                fit_tf(
+                        outdir,
+                        tag, 
+                        region)
+            except ValueError:
+                print(f'Fit does not work properly for region: {region}, skipping')
+                skip_region=True
             
             # For validation/closure testing, use variable delta phi cuts
             do_closure_test=False # For now, skip the closure tests
@@ -632,6 +637,10 @@ def main():
                             outdir, 
                             tag, 
                             region)
+
+        # If there is no proper fit, skip this region
+        if skip_region:
+            continue
 
         tf_variations(outdir, region)
         # tf_closure(outdir, region)
