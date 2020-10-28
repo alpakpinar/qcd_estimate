@@ -614,22 +614,24 @@ def main():
                     region)
             
             # For validation/closure testing, use variable delta phi cuts
-            for cut in [0.2,0.3, 0.4]:
-                tag = f"closure_{cut}_bin_{bintag}".replace('.','p')
-
-                make_templates(
-                                acc, 
-                                outdir, 
-                                tag, 
-                                dphi_cr=slice(0.,cut), 
-                                dphi_sr=slice(cut,0.5),
-                                bins=binvals,
-                                region=region
-                                )
-                fit_tf(
-                        outdir, 
-                        tag, 
-                        region)
+            do_closure_test=False # For now, skip the closure tests
+            if do_closure_test:
+                for cut in [0.2,0.3, 0.4]:
+                    tag = f"closure_{cut}_bin_{bintag}".replace('.','p')
+    
+                    make_templates(
+                                    acc, 
+                                    outdir, 
+                                    tag, 
+                                    dphi_cr=slice(0.,cut), 
+                                    dphi_sr=slice(cut,0.5),
+                                    bins=binvals,
+                                    region=region
+                                    )
+                    fit_tf(
+                            outdir, 
+                            tag, 
+                            region)
 
         tf_variations(outdir, region)
         # tf_closure(outdir, region)
