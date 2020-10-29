@@ -400,8 +400,6 @@ def tf_prediction(outdir,region):
     '''
     Consumes the fitted TFs and creates the final BG prediction.
     '''
-    x = np.linspace(250,1400,100)
-
     plotdir = pjoin(outdir, "prediction")
     if not os.path.exists(plotdir):
         os.makedirs(plotdir)
@@ -560,9 +558,123 @@ def tf_prediction(outdir,region):
         fig.savefig(pjoin(plotdir,f"tf_prediction_{region}_{year}.pdf"),bbox_inches='tight')
         plt.close(fig)
 
+def tf_prediction_from_diff_region(outdir, region_tf, region_pred):
+    '''Calculate final QCD prediction with the TF fit done in region_tf and prediction done in region_pred.'''
+    plotdir = pjoin(outdir, "prediction/mixed")
+    if not os.path.exists(plotdir):
+        os.makedirs(plotdir)
+
+    # Directory to look for the files regarding TFs
+    input_dir_for_tf = pjoin(outdir, region_tf)
+
+    fout = uproot.recreate(f"qcdestimate_tf_{region_tf}_pred_{region_pred}.root")
+    for year in [2017,2018]:
+        # Load the fits from the relevant region        
+        fits = {}
+        for file in os.listdir(input_dir_for_tf):
+            m = re.match(f"tf_fit_{region_tf}_nominal_bin_([a-z,0-9]*).pkl",file)
+            if not m:
+                continue
+            bintag = m.groups()[0]
+            with open(pjoin(input_dir_for_tf, file),"rb") as f:
+                fits[bintag] = pickle.load(f)[year]
+
+        # Load templates
+        f = uproot.open(pjoin(outdir,region_pred,f"templates_{region_pred}_nominal_bin_nom.root"))
+        
+        cr_qcd_sumw, cr_qcd_sumw2 = histdiff(f[f"{region_pred}_{year}_cr_data"], f[f"{region_pred}_{year}_cr_nonqcd"])
+
+        # MC templates in SR for comparison
+        sr_qcd_mc_sumw = f[f"{region_pred}_{year}_sr_qcd"].values
+        sr_qcd_mc_sumw2 = f[f"{region_pred}_{year}_sr_qcd"].variances
+
+        bins = f[f"{region_pred}_{year}_cr_data"].allbins[1:-1]
+        bins[-1,1] = bins[-1,0] + bins[-2,1] - bins[-2,0]
+        dx = 0.5*np.diff(bins   , axis=1)
+        x  = 0.5*np.sum(bins, axis=1)
+
+        fig, ax, rax = fig_ratio()
+        nominal = fits['nom'].evaluate(x,"best") * cr_qcd_sumw
+        nominal_sumw2 = fits['nom'].evaluate(x,"best") * cr_qcd_sumw2
+
+        # Save nominal to file
+        channel = 'vbf'
+        fout[f'qcd_{channel}_{year}'] = (nominal, f[f"{region_pred}_{year}_cr_data"].edges)
+
+        # Plot QCD MC
+        ax.errorbar(
+            x,
+            y=sr_qcd_mc_sumw,
+            yerr=np.sqrt(sr_qcd_mc_sumw2),
+            fmt='o',
+            color='k',
+            label='QCD MC in target'
+        )
+
+        ax.fill_between(
+                    x,
+                    nominal/1.25,
+                    nominal*1.25,
+                    ls='-',
+                    color='crimson',
+                    alpha=0.5,
+                    label='Closure uncertainty'
+                )
+
+        env_dn, env_up = fits['nom'].envelope(x)  * cr_qcd_sumw
+
+        ax.plot(
+            x,
+            nominal,
+            label="Nominal prediction",
+            ls='-',
+            lw=2
+        )
+        ax.fill_between(
+            x,
+            env_dn,
+            env_up,
+            label="Fit uncertainty",
+            alpha=0.5,
+            color="darkorange"
+        )
+        rax.errorbar(
+            x,
+            sr_qcd_mc_sumw / nominal,
+            yerr = np.sqrt(sr_qcd_mc_sumw2) / nominal,
+            fmt='o',
+            color='k'
+        )
+        rax.fill_between(
+                    x,
+                    env_dn / nominal,
+                    env_up / nominal,
+                    color="darkorange",
+                    alpha=0.25,
+                    label='Fit uncertainty')
+
+        rax.fill_between(
+            x,
+            1/1.25,
+            1*1.25,
+            ls='-',
+            color='crimson',
+            alpha=0.5,
+            label='Closure uncertainty'
+            )
+        rax.set_ylim(0,2)
+        ax.set_xlabel(r"$M_{jj} \ (GeV)$")
+        rax.set_xlabel(r"$M_{jj} \ (GeV)$")
+        rax.set_ylabel("Ratio to prediction")
+        ax.legend()
+        ax.set_yscale("log")
+        ax.set_ylim(1e-4,1e8)
+        fig.savefig(pjoin(plotdir,f"tf_prediction_tf_{region_tf}_pred_{region_pred}_{year}.pdf"),bbox_inches='tight')
+        plt.close(fig)
+
 def main():
     # Input handling
-    indir = "./input/merged_2020-10-27_vbfhinv_03Sep20v7_qcd_estimation_very_loose_recoil_regions_detajj_cat"
+    indir = "./input/merged_2020-10-26_vbfhinv_03Sep20v7_qcd_estimation_very_loose_recoil_regions_detajj_cat"
     
     acc = klepto_load(indir)
     acc.load('sumw')
@@ -590,11 +702,10 @@ def main():
         }
     }
 
-    for cut_tag in ['recoil_100', 'recoil_150', 'recoil_200']:
-        for detajj_tag in ['small_detajj', 'large_detajj']:
-            bins[f'sr_vbf_qcd_{cut_tag}_{detajj_tag}'] = {
-                'nom' : [200,400,600,900,1200,1500,2000,2750,3500,5000]
-            } 
+    for cut_tag in ['recoil_200']:
+        bins[f'sr_vbf_qcd_{cut_tag}'] = {
+            'nom' : [200,400,600,900,1200,1500,2000,2750,3500,5000]
+        } 
     
     # Estimate for each region is completely independent
     for region in bins.keys():
@@ -645,5 +756,14 @@ def main():
         tf_variations(outdir, region)
         # tf_closure(outdir, region)
         tf_prediction(outdir, region)
+    
+    outdir=pjoin('./output', pjoin(indir.split('/')[-1]) )
+
+    # Try another QCD estimation: Fit TF for the region with looser MET cut
+    # and make the prediction on regular SR
+    tf_prediction_from_diff_region(outdir, 
+            region_tf='sr_vbf_qcd_recoil_200',
+            region_pred='sr_vbf_qcd'
+            )
 if __name__ == "__main__":
     main()
