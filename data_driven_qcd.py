@@ -702,7 +702,7 @@ def main():
         }
     }
 
-    for cut_tag in ['recoil_200']:
+    for cut_tag in ['recoil_100', 'recoil_150', 'recoil_200', 'small_detajj', 'large_detajj']:
         bins[f'sr_vbf_qcd_{cut_tag}'] = {
             'nom' : [200,400,600,900,1200,1500,2000,2750,3500,5000]
         } 
@@ -763,6 +763,10 @@ def main():
     # and make the prediction on regular SR
     tf_prediction_from_diff_region(outdir, 
             region_tf='sr_vbf_qcd_recoil_200',
+            region_pred='sr_vbf_qcd'
+            )
+    tf_prediction_from_diff_region(outdir, 
+            region_tf='sr_vbf_qcd_recoil_100',
             region_pred='sr_vbf_qcd'
             )
 if __name__ == "__main__":
