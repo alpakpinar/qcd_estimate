@@ -12,15 +12,10 @@ pjoin = os.path.join
 
 def get_title_for_region(region, year):
     metcut = re.findall('recoil_\d+', region)[0].split('_')[-1]
-    if 'small_detajj' in region:
-        detajj_cut = r'$\Delta\eta_{{jj}} < 5.0$'
-    elif 'large_detajj' in region:
-        detajj_cut = r'$\Delta\eta_{{jj}} > 5.0$'
 
-    title = 'QCD MC: {__YEAR__}, MET > {__METCUT__} & {__DETAJJCUT__}'.format(
+    title = 'QCD MC: {__YEAR__}, MET > {__METCUT__} GeV'.format(
         __YEAR__=year,
-        __METCUT__=metcut,
-        __DETAJJCUT__=detajj_cut
+        __METCUT__=metcut
     )
 
     return title
@@ -65,18 +60,15 @@ def plot_qcd(inpath, fit='nominal', binning='nom', region='sr_vbf_qcd', cr_only=
 
 def main():
     regions = [
-        'sr_vbf_qcd_recoil_100_small_detajj',
-        'sr_vbf_qcd_recoil_100_large_detajj',
-        'sr_vbf_qcd_recoil_150_small_detajj',
-        'sr_vbf_qcd_recoil_150_large_detajj',
-        'sr_vbf_qcd_recoil_200_small_detajj',
-        'sr_vbf_qcd_recoil_200_large_detajj'
+        'sr_vbf_qcd_recoil_100',
+        'sr_vbf_qcd_recoil_150',
+        'sr_vbf_qcd_recoil_200'
     ]
 
     for binning in ['nom']:
         for region in regions:
             # Input path for the template root files
-            inpath = f'output/merged_2020-10-27_vbfhinv_03Sep20v7_qcd_estimation_very_loose_recoil_regions_detajj_cat/{region}'
+            inpath = f'output/merged_2020-10-26_vbfhinv_03Sep20v7_qcd_estimation_very_loose_recoil_regions_detajj_cat/{region}'
         
             try:
                 plot_qcd(inpath, fit='nominal', binning=binning, region=region)
