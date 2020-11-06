@@ -82,7 +82,7 @@ def plot_dphi_vs_mjj(acc,outtag):
         plt.close(fig)
 
 def main():
-    inpath = './input/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation'
+    inpath = './input/merged_2020-11-06_vbfhinv_03Sep20v7_qcd_estimation_qcd_cr'
     acc = dir_archive(inpath)
     acc.load('sumw')
     acc.load('sumw2')
