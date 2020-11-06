@@ -11,6 +11,7 @@ from bucoffea.plot.util import (URTH1, fig_ratio, klepto_load, merge_datasets,
 from coffea import hist
 from coffea.hist.export import export1d
 from matplotlib import pyplot as plt
+from matplotlib.ticker import MultipleLocator
 
 from fitlib import TFFit
 
@@ -24,6 +25,10 @@ colors = [
 def exponential(x,a,b,c):
     ret = a * np.exp(-b*x) + c
     ret[ret<0] = 0
+    return ret
+
+def linear(x,a,b):
+    ret = a - b*x
     return ret
 
 def exponential2(x,a,b,c,d):
@@ -125,12 +130,12 @@ def fit_tf(outdir, tag, region):
         dx = 0.5*np.diff(bins   , axis=1)[:,0]
         x  = 0.5*np.sum(bins, axis=1)
         
-        guess = [0.5,1e-2,0]
+        guess = [0.2,0.05]
         fits[year] = TFFit(
             x=x,
             y=tf,
             dy=dtf,
-            fun=exponential,
+            fun=linear,
             p0=guess
 
         )
@@ -195,9 +200,13 @@ def fit_tf(outdir, tag, region):
         ax.set_xlabel(r"$M_{jj} \ (GeV)$")
         rax.set_xlabel(r"$M_{jj} \ (GeV)$")
         ax.legend()
-        ax.set_yscale("log")
-        ax.set_ylim(1e-5,1e0)
+        # ax.set_yscale("log")
+        ax.set_ylim(-0.2,1)
         ax.set_title(f"{tag}, {year}")
+
+        loc = MultipleLocator(0.05)
+        ax.yaxis.set_minor_locator(loc)
+
         fig.savefig(pjoin(outdir,f"tf_fit_{region}_{tag}_{year}.pdf"),bbox_inches='tight')
         plt.close(fig)
 
@@ -563,7 +572,7 @@ def tf_prediction(outdir,region):
 
 def main():
     # Input handling
-    indir = "./input/merged_2020-10-22_vbfhinv_03Sep20v7_qcd_estimation"
+    indir = "./input/merged_2020-11-06_vbfhinv_03Sep20v7_qcd_estimation_recoil_100_160"
     acc = klepto_load(indir)
     acc.load('sumw')
     acc.load('sumw_pileup')
@@ -581,19 +590,15 @@ def main():
     # Alternative binnings
     # split by the name of the signal region to be estimated
     bins = { 
-        'sr_vbf_qcd' : {
+        'sr_vbf_qcd_recoil_100_160' : {
              'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
-             'alt1' :  [200,400,600,1200,1500,2000,2750,3500,5000],
-             'alt2' :  [200,400,600,900,1200,1500,2000,5000],
-             'alt3' :  [200,400,600,1200,1500,2000,5000],
-             'alt4' :  [200,400,600,1500,2000,5000],
         }
     }
 
     outdir = pjoin('./output/',indir.split('/')[-1])
     
     # Estimate for each region is completely independent
-    for region in ['sr_vbf_qcd']:
+    for region in ['sr_vbf_qcd_recoil_100_160']:
         # Independent estimates also for for different bins
         for bintag, binvals in bins[region].items():
             tag =  f"nominal_bin_{bintag}"
@@ -609,22 +614,24 @@ def main():
                     region)
             
             # For validation/closure testing, use variable delta phi cuts
-            for cut in [0.2,0.3, 0.4]:
-                tag = f"closure_{cut}_bin_{bintag}".replace('.','p')
-
-                make_templates(
-                                acc, 
-                                outdir, 
-                                tag, 
-                                dphi_cr=slice(0.,cut), 
-                                dphi_sr=slice(cut,0.5),
-                                bins=binvals,
-                                region=region
-                                )
-                fit_tf(
-                        outdir, 
-                        tag, 
-                        region)
+            do_closure=False
+            if do_closure:
+                for cut in [0.2,0.3, 0.4]:
+                    tag = f"closure_{cut}_bin_{bintag}".replace('.','p')
+    
+                    make_templates(
+                                    acc, 
+                                    outdir, 
+                                    tag, 
+                                    dphi_cr=slice(0.,cut), 
+                                    dphi_sr=slice(cut,0.5),
+                                    bins=binvals,
+                                    region=region
+                                    )
+                    fit_tf(
+                            outdir, 
+                            tag, 
+                            region)
 
         tf_variations(outdir, region)
         # tf_closure(outdir, region)
