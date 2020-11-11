@@ -27,7 +27,7 @@ legend_labels = {
     'MET|Single(Electron|Photon|Muon)|EGamma.*' : "Data"
 }
 
-def stack_plot_qcd_cr(acc, outtag, variable='detajj'):
+def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
     '''Create a stack plot for QCD CR.'''
     acc.load(variable)
     h = acc[variable]
@@ -37,7 +37,7 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj'):
     h = merge_datasets(h)
 
     # Get the QCD CR
-    h = h.integrate('region', 'sr_vbf_qcd_cr')
+    h = h.integrate('region', region)
 
     for year in [2017, 2018]:
         h_data = h[f'MET_{year}']
@@ -77,21 +77,21 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj'):
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         
-        outpath = pjoin(outdir, f'stack_plot_qcd_cr_{year}.pdf')
+        outpath = pjoin(outdir, f'stack_plot_{region}_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
 
         print(f'File saved: {outpath}')
 
 def main():
-    inpath = './input/merged_2020-11-06_vbfhinv_03Sep20v7_qcd_estimation_qcd_cr'
+    inpath = './input/merged_2020-11-11_vbfhinv_03Sep20v7_qcd_estimation_qcd_cr_detajj'
     acc = dir_archive(inpath)
     acc.load('sumw')
     acc.load('sumw2')
 
     outtag = inpath.split('/')[-1]
 
-    stack_plot_qcd_cr(acc, outtag)
+    stack_plot_qcd_cr(acc, outtag, region='sr_vbf_qcd_cr_detajj')
 
 if __name__ == '__main__':
     main()
