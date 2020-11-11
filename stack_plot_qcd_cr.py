@@ -77,7 +77,7 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         
-        outpath = pjoin(outdir, f'stack_plot_{region}_{year}.pdf')
+        outpath = pjoin(outdir, f'stack_plot_{variable}_{region}_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
 
@@ -91,7 +91,27 @@ def main():
 
     outtag = inpath.split('/')[-1]
 
-    stack_plot_qcd_cr(acc, outtag, region='sr_vbf_qcd_cr_detajj')
+    variables = [
+        'detajj',
+        'dphijj',
+        'mjj',
+        'ak4_pt0',
+        'ak4_eta0',
+        'ak4_nef0',
+        'ak4_nhf0',
+        'ak4_chf0',
+        'ak4_pt1',
+        'ak4_eta1',
+        'ak4_nef1',
+        'ak4_nhf1',
+        'ak4_chf1',
+    ]
+
+    for variable in variables:
+        try:
+            stack_plot_qcd_cr(acc, outtag, region='sr_vbf_qcd_cr_detajj', variable=variable)
+        except KeyError:
+            print(f'Distribution not found: {variable}, skipping')
 
 if __name__ == '__main__':
     main()
