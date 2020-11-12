@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import argparse
 import numpy as np
 from matplotlib import pyplot as plt
 from coffea import hist
@@ -10,6 +11,18 @@ from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from klepto.archives import dir_archive
 
 pjoin = os.path.join
+
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inpath', help='Path to merged coffea files.')
+    parser.add_argument('--region', help='Region to look at, default is inclusive.', default='inclusive')
+    args = parser.parse_args()
+    return args
+
+def get_title(region, year):
+    if region == 'inclusive':
+        return f'QCD MC Inclusive: {year}'
+    return f'QCD MC {region}: {year}'
 
 def plot_met_dist(acc, outtag, region='inclusive'):
     '''Plot MET distribution for QCD.'''
@@ -37,7 +50,7 @@ def plot_met_dist(acc, outtag, region='inclusive'):
         hist.plot1d(_h, ax=ax)
 
         ax.get_legend().remove()
-        ax.set_title(f'QCD MC Inclusive: {year}')
+        ax.set_title( get_title(region, year) )
 
         outpath = pjoin(outdir, f'met_dist_{region}_{year}.pdf')
         fig.savefig(outpath)
@@ -46,14 +59,17 @@ def plot_met_dist(acc, outtag, region='inclusive'):
         print(f'File saved: {outpath}')
 
 def main():
-    inpath = sys.argv[1]
+    args = parse_cli()
+    inpath = args.inpath
+    region = args.region
+    
     acc = dir_archive(inpath)
     acc.load('sumw')
     acc.load('sumw2')
 
     outtag  = re.findall('merged_.*', inpath)[0]
 
-    plot_met_dist(acc, outtag)
+    plot_met_dist(acc, outtag, region=args.region)
 
 if __name__ == '__main__':
     main()
