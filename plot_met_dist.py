@@ -24,7 +24,7 @@ def get_title(region, year):
         return f'QCD MC Inclusive: {year}'
     return f'QCD MC {region}: {year}'
 
-def plot_met_dist(acc, outtag, region='inclusive'):
+def plot_met_dist(acc, outtag, region='inclusive', split_by_ht=False):
     '''Plot MET distribution for QCD.'''
     variable = 'met'
     acc.load(variable)
@@ -37,22 +37,40 @@ def plot_met_dist(acc, outtag, region='inclusive'):
 
     h = merge_extensions(h, acc, reweight_pu=False)
     scale_xs_lumi(h)
-    h = merge_datasets(h)
     
     # Rebin MET
     met_ax = hist.Bin('met',r'$p_{T}^{miss}$ (GeV)',list(range(0,500,20)))
     h = h.rebin('met', met_ax)
 
+    if not split_by_ht:
+        h = merge_datasets(h)
+
     h = h.integrate('region', region)
     for year in [2017, 2018]:
-        _h = h.integrate('dataset', f'QCD_HT_{year}')
         fig, ax = plt.subplots()
-        hist.plot1d(_h, ax=ax)
+        if not split_by_ht:
+            _h = h.integrate('dataset', f'QCD_HT_{year}')
+            hist.plot1d(_h, ax=ax)
+            ax.get_legend().remove()
+        else:
+            _h = h[re.compile(f'QCD_HT.*{year}')]
+            hist.plot1d(_h, ax=ax, overlay='dataset')
 
-        ax.get_legend().remove()
+            # Handle legend
+            new_labels = []
+            _, labels = ax.get_legend_handles_labels()
+            for label in labels:
+                new_label = label.replace('QCD_','').replace(f'_{year}', '')
+                new_label = re.sub('-(mg|MLM)', '', new_label)
+                new_labels.append(new_label)
+
+            ax.legend(labels=new_labels)
+
         ax.set_title( get_title(region, year) )
 
-        outpath = pjoin(outdir, f'met_dist_{region}_{year}.pdf')
+        suffix = '_htsplit' if split_by_ht else ''
+
+        outpath = pjoin(outdir, f'met_dist_{region}_{year}{suffix}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
 
@@ -69,7 +87,8 @@ def main():
 
     outtag  = re.findall('merged_.*', inpath)[0]
 
-    plot_met_dist(acc, outtag, region=args.region)
+    plot_met_dist(acc, outtag, region=args.region, split_by_ht=False)
+    plot_met_dist(acc, outtag, region=args.region, split_by_ht=True)
 
 if __name__ == '__main__':
     main()
