@@ -39,6 +39,12 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
     # Get the QCD CR
     h = h.integrate('region', region)
 
+    xlabels_to_fix = {
+        'ak4_nef.*' : 'Neutral EM Energy Fraction',
+        'ak4_nhf.*' : 'Neutral Hadron Energy Fraction',
+        'ak4_chf.*' : 'Charged Hadron Energy Fraction'
+    }
+
     for year in [2017, 2018]:
         h_data = h[f'MET_{year}']
         h_mc = h[re.compile(f'(ZJetsToNuNu.*|EW.*|QCD.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}')]
@@ -72,8 +78,14 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
         ax.set_ylim(1e-1, 1e4)
 
         ax.set_title(f'MTR {year}: QCD CR')
+        ax.yaxis.set_ticks_position('both')
 
-        outdir = f'./output/{outtag}'
+        # Fix x-label if necessary
+        for key, xlabel in xlabels_to_fix.items():
+            if re.match(key, variable):
+                ax.set_xlabel(xlabel)
+
+        outdir = f'./output/{outtag}/stack_plot'
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         
@@ -84,7 +96,7 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
         print(f'File saved: {outpath}')
 
 def main():
-    inpath = './input/merged_2020-11-11_vbfhinv_03Sep20v7_qcd_estimation_qcd_cr_detajj'
+    inpath = './input/merged_2020-11-11_vbfhinv_03Sep20v7_qcd_estimation_v2'
     acc = dir_archive(inpath)
     acc.load('sumw')
     acc.load('sumw2')
