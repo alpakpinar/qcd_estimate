@@ -42,7 +42,9 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
     xlabels_to_fix = {
         'ak4_nef.*' : 'Neutral EM Energy Fraction',
         'ak4_nhf.*' : 'Neutral Hadron Energy Fraction',
-        'ak4_chf.*' : 'Charged Hadron Energy Fraction'
+        'ak4_chf.*' : 'Charged Hadron Energy Fraction',
+        'ak4_eta0' : r'Leading Jet $\eta$',
+        'ak4_eta1' : r'Trailing Jet $\eta$',
     }
 
     for year in [2017, 2018]:
