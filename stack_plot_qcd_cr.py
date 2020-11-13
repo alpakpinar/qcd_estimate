@@ -80,6 +80,10 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
         ax.set_title(f'MTR {year}: QCD CR')
         ax.yaxis.set_ticks_position('both')
 
+        if variable in ['ak4_eta0', 'ak4_eta1']:
+            ax.axvline(x=3.0, ymin=0, ymax=1, color='red', lw=2)
+            ax.axvline(x=-3.0, ymin=0, ymax=1, color='red', lw=2)
+
         # Fix x-label if necessary
         for key, xlabel in xlabels_to_fix.items():
             if re.match(key, variable):
