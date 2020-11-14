@@ -42,6 +42,36 @@ def parse_cli():
     args = parser.parse_args()
     return args
 
+def modify_handles_labels(handles, labels):
+    '''Helper function to update legend labels and aesthetics.'''
+    new_labels = []
+    for handle, label in zip(handles, labels):
+        if not 'MET' in label:
+            handle.set_linestyle('-')
+            handle.set_edgecolor('k')
+
+        for k, v in legend_labels.items():
+            if re.match(k, label):
+                l = v
+        new_labels.append(l if l else label)
+
+    return handles, new_labels
+
+def fix_xlabel(ax, variable):
+    xlabels_to_fix = {
+        'ak4_nef.*' : 'Neutral EM Energy Fraction',
+        'ak4_nhf.*' : 'Neutral Hadron Energy Fraction',
+        'ak4_chf.*' : 'Charged Hadron Energy Fraction',
+        'ak4_eta0' : r'Leading Jet $\eta$',
+        'ak4_eta1' : r'Trailing Jet $\eta$',
+        'dphitkpf' : r'$\Delta\phi(TkMET, PFMET)$',
+    }
+    for key, xlabel in xlabels_to_fix.items():
+        if re.match(key, variable):
+            ax.set_xlabel(xlabel)
+
+    return ax
+
 def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
     '''Create a stack plot for QCD CR.'''
     acc.load(variable)
@@ -53,15 +83,6 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
 
     # Get the QCD CR
     h = h.integrate('region', region)
-
-    xlabels_to_fix = {
-        'ak4_nef.*' : 'Neutral EM Energy Fraction',
-        'ak4_nhf.*' : 'Neutral Hadron Energy Fraction',
-        'ak4_chf.*' : 'Charged Hadron Energy Fraction',
-        'ak4_eta0' : r'Leading Jet $\eta$',
-        'ak4_eta1' : r'Trailing Jet $\eta$',
-        'dphitkpf' : r'$\Delta\phi(TkMET, PFMET)$',
-    }
 
     # Rebin, if necessary
     try:
@@ -91,16 +112,7 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
         hist.plot1d(h_mc, ax=ax, stack=True, overlay='dataset', clear=False, overflow=overflow)
 
         handles, labels = ax.get_legend_handles_labels()
-        new_labels = []
-        for handle, label in zip(handles, labels):
-            if not 'MET' in label:
-                handle.set_linestyle('-')
-                handle.set_edgecolor('k')
-
-            for k, v in legend_labels.items():
-                if re.match(k, label):
-                    l = v
-            new_labels.append(l if l else label)
+        handles, new_labels = modify_handles_labels(handles, labels)
 
         ax.legend(handles=handles, labels=new_labels, prop={'size': 10.}, ncol=2)
 
@@ -115,9 +127,7 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
             ax.axvline(x=-3.0, ymin=0, ymax=1, color='red', lw=2)
 
         # Fix x-label if necessary
-        for key, xlabel in xlabels_to_fix.items():
-            if re.match(key, variable):
-                ax.set_xlabel(xlabel)
+        ax = fix_xlabel(ax, variable)
 
         outdir = f'./output/{outtag}/stack_plot/{region}'
         if not os.path.exists(outdir):
