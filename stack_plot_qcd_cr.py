@@ -28,6 +28,12 @@ legend_labels = {
     'MET|Single(Electron|Photon|Muon)|EGamma.*' : "Data"
 }
 
+binnings = {
+    'ak4_pt0' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(80,1000,20)) ),
+    'ak4_pt1' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,800,20)) ),
+    'mjj' : hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.])
+}
+            
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing merged coffea files.')
@@ -55,6 +61,13 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
         'ak4_eta0' : r'Leading Jet $\eta$',
         'ak4_eta1' : r'Trailing Jet $\eta$',
     }
+
+    # Rebin, if necessary
+    try:
+        newax = binnings[variable]
+        h = h.rebin(h.axis(newax.name), newax)
+    except KeyError:
+        pass
 
     for year in [2017, 2018]:
         h_data = h[f'MET_{year}']
