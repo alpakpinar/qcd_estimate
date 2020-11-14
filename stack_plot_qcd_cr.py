@@ -60,6 +60,7 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
         'ak4_chf.*' : 'Charged Hadron Energy Fraction',
         'ak4_eta0' : r'Leading Jet $\eta$',
         'ak4_eta1' : r'Trailing Jet $\eta$',
+        'dphitkpf' : r'$\Delta\phi(TkMET, PFMET)$',
     }
 
     # Rebin, if necessary
@@ -146,6 +147,9 @@ def main():
         'ak4_nef1',
         'ak4_nhf1',
         'ak4_chf1',
+        'vecb',
+        'vecdphi',
+        'dphitkpf'
     ]
 
     for variable in variables:
