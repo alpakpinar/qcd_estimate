@@ -13,7 +13,7 @@ from stack_plot_qcd_cr import modify_handles_labels, fix_xlabel
 
 pjoin = os.path.join
 
-def plot_jet_fractions_for_eta_slice(acc, etaslice, region='sr_vbf_qcd_cr_detajj'):
+def plot_jet_fractions_for_eta_slice(acc, outtag, etaslice, region='sr_vbf_qcd_cr_detajj'):
     '''Given the 2D eta/fraction distribution, plot the jet energy fraction for a given eta slice.'''
     # 2D jet eta/NEF distribution for all jets
     distribution = 'ak4_eta_nef'
@@ -36,11 +36,11 @@ def plot_jet_fractions_for_eta_slice(acc, etaslice, region='sr_vbf_qcd_cr_detajj
 
     for year in [2017, 2018]:
         # Get data and MC 
-        h_data = h[f'MET_{year}'].integrate('dataset')
+        h_data = h[f'MET_{year}']
         h_mc = h[ re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|DYJetsToLL_M-50_HT_MLM.*|WJetsToLNu.*HT.*).*{year}') ]
 
         fig, ax = plt.subplots()
-        hist.plot1d(h_data, ax=ax, error_opts=data_err_opts)
+        hist.plot1d(h_data, ax=ax, overlay='dataset', error_opts=data_err_opts)
         hist.plot1d(h_mc, ax=ax, overlay='dataset', stack=True, clear=False)
 
         handles, labels = ax.get_legend_handles_labels()
@@ -55,13 +55,16 @@ def plot_jet_fractions_for_eta_slice(acc, etaslice, region='sr_vbf_qcd_cr_detajj
         ax.yaxis.set_ticks_position('both')
 
         # Fix x-label if necessary
-        ax = fix_xlabel(ax, variable)
+        ax = fix_xlabel(ax, distribution)
 
         outdir = f'./output/{outtag}/stack_plot/{region}'
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         
-        outpath = pjoin(outdir, f'ak4_nef_eta_{etaslice.start}_{etaslice.stop}_{year}.pdf')
+        etastarttag = str(etaslice.start).replace('.', '_')
+        etaendtag = str(etaslice.stop).replace('.', '_')
+
+        outpath = pjoin(outdir, f'ak4_nef_eta_{etastarttag}_{etaendtag}_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
 
@@ -82,7 +85,7 @@ def main():
     ]
 
     for etaslice in etaslices:
-        plot_jet_fractions_for_eta_slice(acc, etaslice)
+        plot_jet_fractions_for_eta_slice(acc, outtag, etaslice)
 
 if __name__ == '__main__':
     main()
