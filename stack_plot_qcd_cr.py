@@ -3,6 +3,7 @@
 import os
 import sys
 import re
+import argparse
 from coffea import hist
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from matplotlib import pyplot as plt
@@ -26,6 +27,14 @@ legend_labels = {
     'Diboson.*' : "WW/WZ/ZZ",
     'MET|Single(Electron|Photon|Muon)|EGamma.*' : "Data"
 }
+
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inpath', help='Path containing merged coffea files.')
+    parser.add_argument('--region', help='The region to be plotted, default is QCD CR.', default='sr_vbf_qcd_cr')
+    parser.add_argument('--distribution', help='Regex for the distributions to be plotted.', default='.*')
+    args = parser.parse_args()
+    return args
 
 def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
     '''Create a stack plot for QCD CR.'''
@@ -102,12 +111,13 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
         print(f'File saved: {outpath}')
 
 def main():
-    inpath = './input/merged_2020-11-11_vbfhinv_03Sep20v7_qcd_estimation_v2'
+    args = parse_cli()
+    inpath = args.inpath
     acc = dir_archive(inpath)
     acc.load('sumw')
     acc.load('sumw2')
 
-    outtag = inpath.split('/')[-1]
+    outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
     variables = [
         'detajj',
@@ -126,8 +136,10 @@ def main():
     ]
 
     for variable in variables:
+        if not re.match(args.distribution, variable):
+            continue
         try:
-            stack_plot_qcd_cr(acc, outtag, region='sr_vbf_qcd_cr_detajj', variable=variable)
+            stack_plot_qcd_cr(acc, outtag, region=args.region, variable=variable)
         except KeyError:
             print(f'Distribution not found: {variable}, skipping')
 
