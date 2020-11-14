@@ -82,8 +82,8 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
         }
 
         fig, ax = plt.subplots()
-        hist.plot1d(h_data, ax=ax, overlay='dataset', error_opts=data_err_opts)
-        hist.plot1d(h_mc, ax=ax, stack=True, overlay='dataset', clear=False)
+        hist.plot1d(h_data, ax=ax, overlay='dataset', error_opts=data_err_opts, overflow='over')
+        hist.plot1d(h_mc, ax=ax, stack=True, overlay='dataset', clear=False, overflow='over')
 
         handles, labels = ax.get_legend_handles_labels()
         new_labels = []
