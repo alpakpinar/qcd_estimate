@@ -9,7 +9,7 @@ from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from matplotlib import pyplot as plt
 from klepto.archives import dir_archive
 from pprint import pprint
-from stack_plot_qcd_cr import modify_handles_labels, fix_xlabel
+from stack_plot_qcd_cr import modify_handles_labels, get_fixed_xlabel
 
 pjoin = os.path.join
 
@@ -55,7 +55,8 @@ def plot_jet_fractions_for_eta_slice(acc, outtag, etaslice, region='sr_vbf_qcd_c
         ax.yaxis.set_ticks_position('both')
 
         # Fix x-label if necessary
-        ax = fix_xlabel(ax, distribution)
+        new_xlabel = get_fixed_xlabel(variable='ak4_nef')
+        ax.set_xlabel(new_xlabel)
 
         outdir = f'./output/{outtag}/stack_plot/{region}'
         if not os.path.exists(outdir):

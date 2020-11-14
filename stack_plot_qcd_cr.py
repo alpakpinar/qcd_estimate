@@ -57,7 +57,7 @@ def modify_handles_labels(handles, labels):
 
     return handles, new_labels
 
-def fix_xlabel(ax, variable):
+def get_fixed_xlabel(variable):
     xlabels_to_fix = {
         'ak4_nef.*' : 'Neutral EM Energy Fraction',
         'ak4_nhf.*' : 'Neutral Hadron Energy Fraction',
@@ -68,9 +68,9 @@ def fix_xlabel(ax, variable):
     }
     for key, xlabel in xlabels_to_fix.items():
         if re.match(key, variable):
-            ax.set_xlabel(xlabel)
+            return xlabel
 
-    return ax
+    return 
 
 def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
     '''Create a stack plot for QCD CR.'''
@@ -127,7 +127,8 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
             ax.axvline(x=-3.0, ymin=0, ymax=1, color='red', lw=2)
 
         # Fix x-label if necessary
-        ax = fix_xlabel(ax, variable)
+        new_x_label = get_fixed_xlabel(variable)
+        ax.set_xlabel(new_xlabel)
 
         outdir = f'./output/{outtag}/stack_plot/{region}'
         if not os.path.exists(outdir):
