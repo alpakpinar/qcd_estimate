@@ -100,11 +100,11 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
             if re.match(key, variable):
                 ax.set_xlabel(xlabel)
 
-        outdir = f'./output/{outtag}/stack_plot'
+        outdir = f'./output/{outtag}/stack_plot/{region}'
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         
-        outpath = pjoin(outdir, f'stack_plot_{variable}_{region}_{year}.pdf')
+        outpath = pjoin(outdir, f'stack_plot_{variable}_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
 
