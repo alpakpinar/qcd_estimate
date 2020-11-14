@@ -97,7 +97,7 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
                     l = v
             new_labels.append(l if l else label)
 
-        ax.legend(handles=handles, labels=new_labels, prop={'size': 10.})
+        ax.legend(handles=handles, labels=new_labels, prop={'size': 10.}, ncol=2)
 
         ax.set_yscale('log')
         ax.set_ylim(1e-1, 1e4)
