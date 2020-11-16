@@ -72,6 +72,22 @@ def get_fixed_xlabel(variable):
 
     return 
 
+def get_title(region, year):
+    '''For the given region and year, return the proper figure title.'''
+    region_to_title = {
+        'sr_vbf_qcd_cr' : f'MTR {year}: QCD CR',
+        'sr_vbf_qcd_cr_small_vecdphi' : f'MTR {year}: QCD CR & VecDPhi < 1.0',
+        'sr_vbf_qcd_cr_large_vecdphi' : f'MTR {year}: QCD CR & VecDPhi > 1.0',
+    }
+
+    try:
+        title = region_to_title[region]
+    except KeyError:
+        print(f'No title found for region: {region}')
+        title = region_to_title['sr_vbf_qcd_cr']
+
+    return title
+
 def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
     '''Create a stack plot for QCD CR.'''
     acc.load(variable)
@@ -119,7 +135,7 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
         ax.set_yscale('log')
         ax.set_ylim(1e-1, 1e4)
 
-        ax.set_title(f'MTR {year}: QCD CR')
+        ax.set_title( get_title(region, year) )
         ax.yaxis.set_ticks_position('both')
 
         if variable in ['ak4_eta0', 'ak4_eta1']:
