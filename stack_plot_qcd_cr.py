@@ -144,7 +144,8 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
 
         # Fix x-label if necessary
         new_xlabel = get_fixed_xlabel(variable)
-        ax.set_xlabel(new_xlabel)
+        if new_xlabel:
+            ax.set_xlabel(new_xlabel)
 
         outdir = f'./output/{outtag}/stack_plot/{region}'
         if not os.path.exists(outdir):
