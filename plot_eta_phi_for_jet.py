@@ -4,11 +4,13 @@ import os
 import sys
 import re
 import argparse
+import matplotlib.colors as colors
 from coffea import hist
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from matplotlib import pyplot as plt
 from klepto.archives import dir_archive
 from pprint import pprint
+from stack_plot_qcd_cr import get_title
 
 pjoin = os.path.join
 
@@ -48,11 +50,18 @@ def plot_eta_phi_map(acc, outtag, distribution, region):
 
         ratio = h_data.values()[()] / h_mc.values()[()]
 
-        pc = ax.pcolormesh(etaedges, phiedges, ratio.T)
+        pc = ax.pcolormesh(
+            etaedges, 
+            phiedges, 
+            ratio.T,
+            norm=colors.LogNorm(vmin=1e-1, vmax=1e1))
+        
         fig.colorbar(pc, ax=ax, label='Data / MC')
 
         ax.set_xlabel(r'Jet $\eta$')
         ax.set_ylabel(r'Jet $\phi$')
+
+        ax.set_title( get_title(region, year) )
 
         # Save figure
         outpath = pjoin(outdir, f'{distribution}_{year}.pdf')
