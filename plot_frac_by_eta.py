@@ -21,7 +21,7 @@ def parse_cli():
     args = parser.parse_args()
     return args
 
-def plot_jet_fractions_for_eta_slice(acc, distribution, outtag, etaslice, region='sr_vbf_qcd_cr'):
+def plot_jet_fractions_for_eta_slice(acc, distribution, outtag, etaslice, region='sr_vbf_qcd_cr', plot_signal=True):
     '''Given the 2D eta/fraction distribution, plot the jet energy fraction for a given eta slice.'''
     # 2D jet eta/NEF distribution for all jets
     acc.load(distribution)
@@ -45,15 +45,24 @@ def plot_jet_fractions_for_eta_slice(acc, distribution, outtag, etaslice, region
         # Get data and MC 
         h_data = h[f'MET_{year}']
         h_mc = h[ re.compile(f'(ZJetsToNuNu.*|EW.*|Top_FXFX.*|Diboson.*|DYJetsToLL_M-50_HT_MLM.*|WJetsToLNu.*HT.*).*{year}') ]
+        h_signal = h[ re.compile(f'VBF_HToInv.*{year}') ]
 
         fig, ax = plt.subplots()
         hist.plot1d(h_data, ax=ax, overlay='dataset', error_opts=data_err_opts)
         hist.plot1d(h_mc, ax=ax, overlay='dataset', stack=True, clear=False)
 
+        signal_line_opts = {
+            'color':'black',
+            'linewidth' : 2,
+        }
+
+        if plot_signal:
+            hist.plot1d(h_signal, ax=ax, overlay='dataset', clear=False, line_opts=signal_line_opts)
+
         handles, labels = ax.get_legend_handles_labels()
         handles, new_labels = modify_handles_labels(handles, labels)
 
-        ax.legend(handles=handles, labels=new_labels, prop={'size': 10.}, ncol=2)
+        ax.legend(handles=handles, labels=new_labels, prop={'size': 9.}, ncol=2, loc='upper right')
 
         ax.set_yscale('log')
         ax.set_ylim(1e-1, 1e4)
