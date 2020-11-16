@@ -25,6 +25,7 @@ legend_labels = {
     'QCD.*' : "QCD",
     'Top.*' : "Top quark",
     'Diboson.*' : "WW/WZ/ZZ",
+    'VBF.*' : "VBF H(inv)",
     'MET|Single(Electron|Photon|Muon)|EGamma.*' : "Data"
 }
 
@@ -46,7 +47,7 @@ def modify_handles_labels(handles, labels):
     '''Helper function to update legend labels and aesthetics.'''
     new_labels = []
     for handle, label in zip(handles, labels):
-        if not 'MET' in label:
+        if not ('MET' in label or 'VBF' in label):
             handle.set_linestyle('-')
             handle.set_edgecolor('k')
 
@@ -88,7 +89,7 @@ def get_title(region, year):
 
     return title
 
-def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
+def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr', plot_signal=True):
     '''Create a stack plot for QCD CR.'''
     acc.load(variable)
     h = acc[variable]
@@ -110,12 +111,18 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
     for year in [2017, 2018]:
         h_data = h[f'MET_{year}']
         h_mc = h[re.compile(f'(ZJetsToNuNu.*|EW.*|QCD.*|Top_FXFX.*|Diboson.*|.*DYJetsToLL_M-50_HT_MLM.*|.*WJetsToLNu.*HT.*).*{year}')]
-        
+        h_signal = h[re.compile(f'VBF_HToInv.*{year}')]
+
         data_err_opts = {
             'linestyle':'none',
             'marker': '.',
             'markersize': 10.,
             'color':'k',
+        }
+
+        signal_line_opts = {
+            'color':'crimson',
+            'linewidth' : 2,
         }
 
         if variable == 'vecdphi':
@@ -126,6 +133,10 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
         fig, ax = plt.subplots()
         hist.plot1d(h_data, ax=ax, overlay='dataset', error_opts=data_err_opts, overflow=overflow)
         hist.plot1d(h_mc, ax=ax, stack=True, overlay='dataset', clear=False, overflow=overflow)
+
+        if plot_signal:
+            # hist.plot1d(h_signal, ax=ax, overlay='dataset', clear=False)
+            hist.plot1d(h_signal, ax=ax, overlay='dataset', line_opts=signal_line_opts, clear=False)
 
         handles, labels = ax.get_legend_handles_labels()
         handles, new_labels = modify_handles_labels(handles, labels)
