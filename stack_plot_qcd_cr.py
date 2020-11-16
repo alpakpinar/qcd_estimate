@@ -127,7 +127,7 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr'):
             ax.axvline(x=-3.0, ymin=0, ymax=1, color='red', lw=2)
 
         # Fix x-label if necessary
-        new_x_label = get_fixed_xlabel(variable)
+        new_xlabel = get_fixed_xlabel(variable)
         ax.set_xlabel(new_xlabel)
 
         outdir = f'./output/{outtag}/stack_plot/{region}'
