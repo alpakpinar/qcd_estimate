@@ -144,7 +144,7 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr', pl
         ax.legend(handles=handles, labels=new_labels, prop={'size': 10.}, ncol=2)
 
         ax.set_yscale('log')
-        ax.set_ylim(1e-1, 1e4)
+        ax.set_ylim(1e-1, 1e6)
 
         ax.set_title( get_title(region, year) )
         ax.yaxis.set_ticks_position('both')
