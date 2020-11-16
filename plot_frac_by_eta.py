@@ -65,7 +65,7 @@ def plot_jet_fractions_for_eta_slice(acc, distribution, outtag, etaslice, region
         ax.legend(handles=handles, labels=new_labels, prop={'size': 9.}, ncol=2, loc='upper right')
 
         ax.set_yscale('log')
-        ax.set_ylim(1e-1, 1e4)
+        ax.set_ylim(1e-3, 1e6)
 
         ax.set_title(f'MTR {year}: QCD CR')
         ax.yaxis.set_ticks_position('both')
