@@ -12,6 +12,13 @@ from pprint import pprint
 
 pjoin = os.path.join
 
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inpath', help='Path containing merged coffea files.')
+    parser.add_argument('--region', help='The region to look at, default is sr_vbf_qcd_cr_detajj.', default='sr_vbf_qcd_cr_detajj')
+    args = parser.parse_args()
+    return args
+
 def plot_eta_phi_map(acc, outtag, distribution, region):
     '''Plot 2D eta/phi map for leading or trailing jet.'''
     acc.load(distribution)
@@ -55,7 +62,8 @@ def plot_eta_phi_map(acc, outtag, distribution, region):
         print(f'File saved: {outpath}')
 
 def main():
-    inpath = sys.argv[1]
+    args = parse_cli()
+    inpath = args.inpath
     acc = dir_archive(inpath)
     acc.load('sumw')
     acc.load('sumw2')
@@ -64,7 +72,7 @@ def main():
 
     plot_eta_phi_map(acc, outtag,
         distribution='ak4_eta0_phi0',
-        region='sr_vbf_qcd_cr'
+        region=args.region
     )
 
 if __name__ == '__main__':
