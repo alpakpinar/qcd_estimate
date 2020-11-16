@@ -4,6 +4,7 @@ import os
 import sys
 import re
 import argparse
+import numpy as np
 from coffea import hist
 from bucoffea.plot.util import merge_datasets, merge_extensions, scale_xs_lumi
 from matplotlib import pyplot as plt
@@ -32,7 +33,10 @@ legend_labels = {
 binnings = {
     'ak4_pt0' : hist.Bin('jetpt',r'Leading AK4 jet $p_{T}$ (GeV)',list(range(80,1000,20)) ),
     'ak4_pt1' : hist.Bin('jetpt',r'Trailing AK4 jet $p_{T}$ (GeV)',list(range(40,800,20)) ),
-    'mjj' : hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.])
+    'mjj' : hist.Bin('mjj', r'$M_{jj} \ (GeV)$', [200., 400., 600., 900., 1200., 1500., 2000., 2750., 3500., 5000.]),
+    'vecb' : hist.Bin('vecb', 'VecB', 25, 0, 0.5),
+    'vecdphi' : hist.Bin('vecdphi', 'VecDPhi', list(np.arange(0,1,0.1)) + list(np.arange(1,3.5,0.25))),
+    'dphitkpf' : hist.Bin('dphi', r'$\Delta\phi$', list(np.arange(0,1,0.1)) + list(np.arange(1,3.5,0.25)))
 }
             
 def parse_cli():
