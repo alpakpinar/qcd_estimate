@@ -13,10 +13,17 @@ from stack_plot_qcd_cr import modify_handles_labels, get_fixed_xlabel
 
 pjoin = os.path.join
 
-def plot_jet_fractions_for_eta_slice(acc, outtag, etaslice, region='sr_vbf_qcd_cr_detajj'):
+def parse_cli():
+    parser = argparse.ArgumentParser()
+    parser.add_argument('inpath', help='Path containing merged coffea files.')
+    parser.add_argument('--region', help='The region to look at, default is sr_vbf_qcd_cr.', default='sr_vbf_qcd_cr')
+    parser.add_argument('--distribution', help='Regex to specify which distribution to plot.', default='.*')
+    args = parser.parse_args()
+    return args
+
+def plot_jet_fractions_for_eta_slice(acc, distribution, outtag, etaslice, region='sr_vbf_qcd_cr'):
     '''Given the 2D eta/fraction distribution, plot the jet energy fraction for a given eta slice.'''
     # 2D jet eta/NEF distribution for all jets
-    distribution = 'ak4_eta_nef'
     acc.load(distribution)
     h = acc[distribution]
 
@@ -58,21 +65,22 @@ def plot_jet_fractions_for_eta_slice(acc, outtag, etaslice, region='sr_vbf_qcd_c
         new_xlabel = get_fixed_xlabel(variable='ak4_nef')
         ax.set_xlabel(new_xlabel)
 
-        outdir = f'./output/{outtag}/stack_plot/{region}'
+        outdir = f'./output/{outtag}/stack_plot/{region}/em_fracs_by_eta'
         if not os.path.exists(outdir):
             os.makedirs(outdir)
         
         etastarttag = str(etaslice.start).replace('.', '_')
         etaendtag = str(etaslice.stop).replace('.', '_')
 
-        outpath = pjoin(outdir, f'ak4_nef_eta_{etastarttag}_{etaendtag}_{year}.pdf')
+        outpath = pjoin(outdir, f'{distribution}_{etastarttag}_{etaendtag}_{year}.pdf')
         fig.savefig(outpath)
         plt.close(fig)
 
         print(f'File saved: {outpath}')
 
 def main():
-    inpath = sys.argv[1]
+    args = parse_cli()
+    inpath = args.inpath
     acc = dir_archive(inpath)
     acc.load('sumw')
     acc.load('sumw2')
@@ -85,8 +93,22 @@ def main():
         slice(3.0,5.0)
     ]
 
-    for etaslice in etaslices:
-        plot_jet_fractions_for_eta_slice(acc, outtag, etaslice)
+    distribtuions = [
+        'ak4_eta0_nef0',
+        'ak4_eta1_nef1',
+        'ak4_eta_nef',
+    ]
+
+    for distribtuion in distribtuions:
+        if not re.match(args.distribution, distribtuion):
+            continue
+        for etaslice in etaslices:
+            plot_jet_fractions_for_eta_slice(acc, 
+                distribution=distribtuion,
+                outtag=outtag, 
+                etaslice=etaslice, 
+                region=args.region
+                )
 
 if __name__ == '__main__':
     main()
