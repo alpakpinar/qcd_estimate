@@ -135,7 +135,6 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr', pl
         hist.plot1d(h_mc, ax=ax, stack=True, overlay='dataset', clear=False, overflow=overflow)
 
         if plot_signal:
-            # hist.plot1d(h_signal, ax=ax, overlay='dataset', clear=False)
             hist.plot1d(h_signal, ax=ax, overlay='dataset', line_opts=signal_line_opts, clear=False)
 
         handles, labels = ax.get_legend_handles_labels()
