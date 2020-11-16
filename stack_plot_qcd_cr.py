@@ -121,7 +121,7 @@ def stack_plot_qcd_cr(acc, outtag, variable='detajj', region='sr_vbf_qcd_cr', pl
         }
 
         signal_line_opts = {
-            'color':'crimson',
+            'color':'black',
             'linewidth' : 2,
         }
 
