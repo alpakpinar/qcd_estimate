@@ -17,7 +17,8 @@ pjoin = os.path.join
 def parse_cli():
     parser = argparse.ArgumentParser()
     parser.add_argument('inpath', help='Path containing merged coffea files.')
-    parser.add_argument('--region', help='The region to look at, default is sr_vbf_qcd_cr_detajj.', default='sr_vbf_qcd_cr_detajj')
+    parser.add_argument('--region', help='The region to look at, default is sr_vbf_qcd_cr.', default='sr_vbf_qcd_cr')
+    parser.add_argument('--distribution', help='Regex to specify which distribution to plot.', default='.*')
     args = parser.parse_args()
     return args
 
@@ -58,8 +59,12 @@ def plot_eta_phi_map(acc, outtag, distribution, region):
         
         fig.colorbar(pc, ax=ax, label='Data / MC')
 
-        ax.set_xlabel(r'Jet $\eta$')
-        ax.set_ylabel(r'Jet $\phi$')
+        if 'eta0' in distribution:
+            ax.set_xlabel(r'Leading jet $\eta$')
+            ax.set_ylabel(r'Leading jet $\phi$')
+        elif 'eta1' in distribution:
+            ax.set_xlabel(r'Trailing jet $\eta$')
+            ax.set_ylabel(r'Trailing jet $\phi$')
 
         ax.set_title( get_title(region, year) )
 
@@ -79,10 +84,19 @@ def main():
 
     outtag = re.findall('merged_.*', inpath)[0].replace('/', '')
 
-    plot_eta_phi_map(acc, outtag,
-        distribution='ak4_eta0_phi0',
-        region=args.region
-    )
+    distributions = [
+        'ak4_eta0_phi0',
+        'ak4_eta1_phi1',
+    ]
+
+    for distribution in distributions:
+        if not re.match(args.distribution, distribution):
+            continue
+
+        plot_eta_phi_map(acc, outtag,
+            distribution=distribution,
+            region=args.region
+        )
 
 if __name__ == '__main__':
     main()
