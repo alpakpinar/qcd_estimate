@@ -571,7 +571,7 @@ def tf_prediction(outdir,region):
 
 def main():
     # Input handling
-    indir = "./input/merged_2020-11-11_vbfhinv_03Sep20v7_qcd_estimation_v2"
+    indir = "./input/merged_2020-11-17_vbfhinv_03Sep20v7_qcd_estimation"
     acc = klepto_load(indir)
     acc.load('sumw')
     acc.load('sumw_pileup')
@@ -589,6 +589,9 @@ def main():
     # Alternative binnings
     # split by the name of the signal region to be estimated
     bins = { 
+        'sr_vbf_qcd' : {
+             'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
+        },
         'sr_vbf_qcd_met_100_160' : {
              'nom' :  [200,400,600,900,1200,1500,2000,2750,3500,5000],
         }
@@ -597,7 +600,7 @@ def main():
     outdir = pjoin('./output/',indir.split('/')[-1])
     
     # Estimate for each region is completely independent
-    for region in ['sr_vbf_qcd_met_100_160']:
+    for region in ['sr_vbf_qcd', 'sr_vbf_qcd_met_100_160']:
         # Independent estimates also for for different bins
         for bintag, binvals in bins[region].items():
             tag =  f"nominal_bin_{bintag}"
