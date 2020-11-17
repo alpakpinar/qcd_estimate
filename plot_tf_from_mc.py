@@ -19,7 +19,7 @@ data_err_opts = {
     'color':'k'
 }
 
-def plot_tf_from_mc(acc, outdir, variable='mjj', ht_startsfrom_200=False):
+def plot_tf_from_mc(acc, outdir, variable='mjj', ht_startsfrom_200=False, low_met=False):
     '''Calculate and plot the TF from QCD MC.'''
     acc.load(variable)
     h = acc[variable]
@@ -38,14 +38,19 @@ def plot_tf_from_mc(acc, outdir, variable='mjj', ht_startsfrom_200=False):
             _h = h.integrate('dataset', f'QCD_HT_{year}')
         else:
             _h = h[re.compile(f'QCD_HT(?!(50to|100to)).*{year}')].integrate('dataset')
-        hnum = _h.integrate('region', 'sr_vbf_qcd_regionB')
-        hden = _h.integrate('region', 'sr_vbf_qcd_regionA')
+        if low_met:
+            hnum = _h.integrate('region', 'sr_vbf_qcd_regionB')
+            hden = _h.integrate('region', 'sr_vbf_qcd_regionA')
+            labels = ['Region B', 'Region A']
+        else:
+            hnum = _h.integrate('region', 'sr_vbf_no_veto_all')
+            hden = _h.integrate('region', 'sr_vbf_qcd_cr')
+            labels = ['Signal region', 'Control region']
 
         fig, ax, rax = fig_ratio()
         hist.plot1d(hnum, ax=ax)
         hist.plot1d(hden, ax=ax, clear=False)
 
-        labels = ['Region B', 'Region A']
         ax.legend(labels=labels)
         ax.set_title(f'QCD MC: {year}')
         ax.set_yscale('log')
@@ -54,13 +59,18 @@ def plot_tf_from_mc(acc, outdir, variable='mjj', ht_startsfrom_200=False):
         hist.plotratio(hnum, hden, ax=rax, unc='num', error_opts=data_err_opts)
 
         rax.grid(True)
-        rax.set_ylim(0,1)
+        if low_met:
+            rax.set_ylim(0,1)
+        else:
+            rax.set_ylim(0,0.4)
         rax.set_ylabel('MC based TF')
 
+        low_met_suffix = '_lowmet' if low_met else ''
+ 
         if ht_startsfrom_200:
-            outname = f'qcd_mc_regionab_{year}_ht200.pdf'
+            outname = f'qcd_mc_tf{low_met_suffix}_{year}_ht200.pdf'
         else:
-            outname = f'qcd_mc_regionab_{year}.pdf'
+            outname = f'qcd_mc_tf{low_met_suffix}_{year}.pdf'
 
         outpath = pjoin(outdir, outname)
         fig.savefig(outpath)
